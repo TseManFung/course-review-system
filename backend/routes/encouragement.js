@@ -1,6 +1,7 @@
 const express = require('express');
 const pool = require('../config/db');
-const { authenticateToken, requireAdmin } = require('../middleware/auth');
+const {authenticateToken, requireAdmin } = require('../middleware/auth');
+const { generateSnowflakeId } = require('./utils');
 
 const router = express.Router();
 
@@ -26,7 +27,7 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'content required (<=248 chars)' });
     await pool.query(
       'INSERT INTO Encouragement (encouragementId, content, status) VALUES (?, ?, "C")',
-      [Date.now(), content]
+      [generateSnowflakeId(), content]
     );
     res.status(201).json({ message: 'Encouragement created' });
   } catch (err) {

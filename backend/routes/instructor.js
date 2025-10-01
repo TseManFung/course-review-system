@@ -1,7 +1,7 @@
 const express = require('express');
 const pool = require('../config/db');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
-const { EMAIL_REGEX, buildPagination } = require('./utils');
+const {generateSnowflakeId, EMAIL_REGEX, buildPagination } = require('./utils');
 
 const router = express.Router();
 
@@ -31,11 +31,10 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
     if (email && !EMAIL_REGEX.test(email)) {
       return res.status(400).json({ error: 'Invalid email format' });
     }
-    // simple snowflake-like id using Date.now() combined with random
-    const instructorId = Date.now();
+  const instructorId = generateSnowflakeId();
     await pool.query(
       'INSERT INTO Instructor (instructorId, firstName, lastName, email, departmentId, status) VALUES (?, ?, ?, ?, ?, "C")',
-      [instructorId, firstName, lastName, email || null, departmentId]
+  [instructorId, firstName, lastName, email || null, departmentId]
     );
     res.status(201).json({ message: 'Instructor created', instructorId });
   } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to create instructor' }); }

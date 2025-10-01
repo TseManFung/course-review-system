@@ -1,7 +1,7 @@
 const express = require('express');
 const pool = require('../config/db');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
-const { buildPagination } = require('./utils');
+const {generateSnowflakeId, buildPagination } = require('./utils');
 
 const router = express.Router();
 
@@ -62,7 +62,7 @@ router.post('/', authenticateToken, async (req, res) => {
         return res.status(409).json({ error: 'You have already reviewed this offering' });
       }
 
-      const reviewId = Date.now();
+      const reviewId = generateSnowflakeId();
       await conn.query(
         `INSERT INTO Review (reviewId, userId, courseId, semesterId, contentRating, teachingRating, gradingRating, workloadRating, status)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'C')`,
