@@ -21,6 +21,55 @@ router.get('/', authenticateToken, requireAdmin, async (req, res) => {
   } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to fetch instructors' }); }
 });
 
+// POST /instructor - create instructor
+router.post('/', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { firstName, lastName, email, departmentId } = req.body || {};
+    if (!firstName || !lastName || !departmentId) {
+      return res.status(400).json({ error: 'firstName, lastName, departmentId required' });
+    }
+    if (email && !EMAIL_REGEX.test(email)) {
+      return res.status(400).json({ error: 'Invalid email format' });
+    }
+    // simple snowflake-like id using Date.now() combined with random
+    const instructorId = Date.now();
+    await pool.query(
+      'INSERT INTO Instructor (instructorId, firstName, lastName, email, departmentId, status) VALUES (?, ?, ?, ?, ?, "C")',
+      [instructorId, firstName, lastName, email || null, departmentId]
+    );
+    res.status(201).json({ message: 'Instructor created', instructorId });
+  } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to create instructor' }); }
+});
+
+// GET /instructor/search?query=...
+router.get('/search', authenticateToken, async (req, res) => {
+  try {
+    const q = (req.query.query || '').trim();
+    if (!q) return res.json([]);
+    const like = `%${q}%`;
+    const [rows] = await pool.query(
+      `SELECT instructorId, firstName, lastName, email, departmentId
+       FROM Instructor
+       WHERE status = 'C' AND (firstName LIKE ? OR lastName LIKE ? OR email LIKE ?) 
+       ORDER BY lastName ASC, firstName ASC
+       LIMIT 50`,
+      [like, like, like]
+    );
+    res.json(rows);
+  } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to search instructor' }); }
+});
+
+// GET /instructor/check?email=
+router.get('/check', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email) return res.status(400).json({ error: 'email required' });
+    if (!EMAIL_REGEX.test(email)) return res.status(400).json({ error: 'Invalid email format' });
+    const [[row]] = await pool.query('SELECT 1 AS ok FROM Instructor WHERE email = ? LIMIT 1', [email]);
+    res.json({ exists: !!row });
+  } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to check instructor' }); }
+});
+
 router.patch('/:instructorId', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { instructorId } = req.params;

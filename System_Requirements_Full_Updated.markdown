@@ -189,4 +189,202 @@
       - 評論數量（`Review` 表，`status = 'C'`）
     - 若無結果或顯示到最後，顯示「創建課程（Create Course）」按鈕，點擊導航至創建課程頁面。
   - **分頁與顯示控制**：
-    - 上方
+    - 上方左側顯示「Showing 1 to 10 of X rows」。
+    - 下方左側提供每頁行數選擇（30、50、80、100）。
+    - 下方右側提供分頁控制，請求後端 API。
+    - 上方右側提供排序：按評論數量（降序）、最新評論（`Review.createdAt` 降序，預設）、總平均評分（降序）。
+  - **點擊行為**：
+    - 點擊卡片行，導航至課程資訊頁面。
+- **前端實現**：
+  - 使用 MUI 的 `Card` 展示卡片行，`Rating` 組件顯示評分。
+  - 使用 MUI 的 `Pagination` 和 `Select` 實現分頁和行數選擇。
+  - 使用 MUI 的 `Button` 實現「創建課程」按鈕。
+- **後端 API**：
+  - `GET /api/course/search`：
+    - 參數：`query`（匹配 `courseId`, `name`, `Instructor.firstName`, `lastName`, `email`）、`page`、`limit`、`sort`。
+    - 返回：課程列表（包含平均評分和評論數量）。
+
+### 2.7 創建課程（Create Course）
+- **功能描述**：
+  - 任何用戶可創建課程。
+  - **頁面內容**：
+    - 表單欄位（對應 `Course` 和 `CourseDescription` 表）：
+      - 課程編號（`courseId`）：必填，長度 ≥ 6。
+      - 學系（`departmentId`）：下拉選單，顯示 `Department` 表（`status = 'C'`）。
+      - 課程名稱（`name`）：必填，最大 100 字元。
+      - 課程描述（`description`）：可選，文本區域。
+      - 學分（`credits`）：必填，範圍 0-6。
+    - 提供「提交（Submit）」按鈕。
+  - **提交前檢查**：
+    - 驗證 `courseId` 是否唯一（`status = 'C'`）。
+    - 若存在，顯示模態框，提示：「相同的課程編號已存在！」並提供：
+      - 鏈接至課程資訊頁面。
+      - 重新輸入選項，保留表單資料。
+    - 提交成功，保存至 `Course` 和 `CourseDescription` 表（`status = 'C'`），導航回搜索結果頁面。
+- **前端實現**：
+  - 使用 MUI 的 `FormControl`, `TextField`, `Select`, `TextArea` 實現表單。
+  - 使用 MUI 的 `Dialog` 實現模態框。
+  - 使用 `react-hook-form` 保留表單資料。
+- **後端 API**：
+  - `POST /api/course`：創建課程。
+  - `GET /api/department`：獲取學系列表。
+  - `GET /api/course/check`：檢查 `courseId` 是否存在。
+
+### 2.8 課程資訊（Course Information）
+- **功能描述**：
+  - 顯示特定課程的詳細資訊。
+  - **頁面內容**：
+    - **課程基本資訊**（`Course` 表）：
+      - 課程編號（`courseId`）
+      - 課程名稱（`name`）
+      - 學系（`Department.name`）
+      - 課程描述（`CourseDescription.description`）
+      - 學分（`credits`）
+    - **課程開設資訊**（`CourseOffering`, `CourseOfferingInstructor`）：
+      - 學期（`Semester.name`）
+      - 教師（`Instructor.firstName`, `lastName`）
+    - **評論統計**（`Review` 表，`status = 'C'`）：
+      - 四個平均評分（2 位小數，使用評分組件）：
+        - `contentRating`, `teachingRating`, `gradingRating`, `workloadRating`
+      - 總評論數量
+    - **創建評論按鈕**：
+      - 顯示「創建評論（Create Review）」按鈕，點擊導航至創建課程評論頁面（附帶 `courseId`，僅學生 `accessLevel = 10000` 可見）。
+    - **評論列表**：
+      - 顯示課程評論（`status = 'C'`，按 `createdAt` 降序）。
+      - 每條評論顯示：
+        - 學期（`Semester.name`）
+        - 四個評分（使用評分組件）
+        - 評論內容（`ReviewComment.comment`）
+        - 創建時間（`createdAt`）
+      - 分頁控制：每頁 30 條，請求後端 API。
+- **前端實現**：
+  - 使用 MUI 的 `Card` 展示課程資訊和統計。
+  - 使用 MUI 的 `List` 或 `Card` 展示評論列表。
+  - 使用 MUI 的 `Pagination` 實現分頁。
+  - 使用 MUI 的 `Button` 實現「創建評論」按鈕。
+- **後端 API**：
+  - `GET /api/course/:courseId`：獲取課程資訊。
+  - `GET /api/course/:courseId/offerings`：獲取開設資訊。
+  - `GET /api/course/:courseId/reviews`：獲取評論列表和統計。
+
+### 2.9 創建課程評論（Create Course Review）
+- **功能描述**：
+  - 學生（`accessLevel = 10000`）為課程開設提交評論。
+  - **頁面內容**：
+    - 表單欄位（對應 `Review` 和 `ReviewComment` 表）：
+      - **課程（`courseId`）**：自動填充（不可修改），從導航參數獲取。
+      - **學期（`semesterId`）**：下拉選單，顯示該課程的 `CourseOffering`（`status = 'C'`）。
+      - **教師（`instructorId`）**：
+        - 自動顯示與選定 `CourseOffering` 關聯的教師。
+        - 提供搜索區域（按 `Instructor.firstName`, `lastName`, `email`），顯示教師列表/下拉選單。
+        - 列表末尾提供「創建教師（Create Instructor）」按鈕，點擊打開新頁面。
+        - 提供「刷新教師列表」按鈕，重新加載教師數據。
+      - **評分**（整數，0-10，使用評分組件）：
+        - 課程內容評分（`contentRating`）：提示「課程內容質量如何？」
+        - 教學質量評分（`teachingRating`）：提示「教師教學表現如何？」
+        - 評分公平性評分（`gradingRating`）：提示「評分標準是否公平？」
+        - 工作量評分（`workloadRating`）：提示「課程工作量是否合理？」
+      - **評論內容（`comment`）**：文本區域，可選，最大 1000 字元，後端檢查是否僅空白或無意義字符。
+    - **提交前檢查**：
+      - 驗證評分在 0-10 範圍內。
+      - 檢查用戶是否已對該 `CourseOffering` 提交評論（`userId`, `courseId`, `semesterId` 唯一）。
+      - 若無 `CourseOffering`，自動創建（插入 `CourseOffering` 表）。
+      - 若已存在評論，顯示模態框，提示：「你已對此課程提交過評論！」並提供鏈接至評論歷史頁面。
+      - 提交成功，保存至 `Review` 和 `ReviewComment` 表（`status = 'C'`），導航回課程資訊頁面。
+- **前端實現**：
+  - 使用 MUI 的 `FormControl`, `Select`, `Rating`, `TextArea` 實現表單。
+  - 使用 MUI 的 `Dialog` 實現模態框。
+  - 使用 MUI 的 `Button` 實現提交、創建教師、刷新教師列表。
+  - 使用 `react-hook-form` 管理表單狀態。
+- **後端 API**：
+  - `GET /api/course/:courseId/offerings`：獲取課程開設列表。
+  - `GET /api/instructor/search`：搜索教師。
+  - `POST /api/course-offering`：創建 `CourseOffering`。
+  - `POST /api/review`：創建評論。
+  - `GET /api/review/check`：檢查是否已提交評論。
+
+### 2.10 創建教師（Create Instructor）
+- **功能描述**：
+  - 任何用戶可創建教師記錄（未來可限制為管理員）。
+  - **頁面內容**：
+    - 表單欄位（對應 `Instructor` 表）：
+      - 名字（`firstName`）：必填，最大 50 字元。
+      - 姓氏（`lastName`）：必填，最大 50 字元。
+      - 電子郵件（`email`）：可選，需符合正則表達式。
+      - 學系（`departmentId`）：下拉選單，顯示 `Department` 表（`status = 'C'`）。
+    - 提供「提交（Submit）」按鈕。
+  - **提交前檢查**：
+    - 驗證 `firstName`, `lastName` 非空且符合長度。
+    - 若提供 `email`，驗證格式並檢查是否唯一。
+    - 若 `email` 已存在，顯示模態框，提示：「該電子郵件已存在！」並允許重新輸入（保留表單資料）。
+    - 提交成功，保存至 `Instructor` 表（`status = 'C'`, `instructorId` 由 Snowflake 生成），導航回創建課程評論頁面。
+- **前端實現**：
+  - 使用 MUI 的 `FormControl`, `TextField`, `Select` 實現表單。
+  - 使用 MUI 的 `Dialog` 實現模態框。
+  - 使用 `react-hook-form` 保留表單資料。
+- **後端 API**：
+  - `POST /api/instructor`：創建教師。
+  - `GET /api/department`：獲取學系列表。
+  - `GET /api/instructor/check`：檢查 `email` 是否存在。
+
+## 3. 非功能需求
+- **安全性**：
+  - 使用 JWT 驗證用戶身份，限制管理員功能（`accessLevel = 0`）和學生功能（`accessLevel = 10000`）。
+  - 註冊驗證郵件使用安全鏈接（帶一次性令牌）。
+  - 僅顯示 `status = 'C'` 的數據。
+  - 使用 bcrypt 加密密碼，限制 `loginFail`（> 5 次鎖定帳戶）。
+  - 密碼需符合正則表達式：`^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,}$`。
+- **性能**：
+  - 分頁請求限制每頁數據量（30、50、80、100 行）。
+  - 使用資料庫索引優化搜索（`courseId`, `name`, `Instructor.email` 等）。
+  - 評分計算使用 SQL 聚合函數（`AVG`）。
+- **可訪問性**：
+  - 支援鍵盤導航，符合 WCAG 2.1。
+  - 評分組件和表單使用高對比度，適配深色/淺色模式。
+- **可擴展性**：
+  - 支援未來添加篩選條件（如按學期搜索）。
+  - 表單支援添加新欄位（如課程類型、教師職稱）。
+
+## 4. 使用者介面設計
+- **頂部導航欄**：使用 MUI 藍色主題，固定頂部。
+- **首頁**：
+  - 未登入：登入/註冊表單置中，使用 MUI `Card` 包裝。
+  - 已登入：搜索框和句子置中，背景淺色漸變。
+- **管理員頁面**：側邊欄深色主題，表格支援排序和過濾。
+- **評分組件**：使用 MUI `Typography` 和 `Tooltip`，動態背景。
+- **搜索結果**：卡片行適配移動設備，垂直滾動。
+- **課程資訊**：分區顯示資訊、統計和評論，分頁直觀。
+- **表單頁面**：使用 MUI `Grid` 佈局，模態框清晰。
+
+## 5. 技術實現細節
+- **前端**：
+  - 使用 Vite + React（TypeScript）構建 SPA。
+  - 使用 MUI 組件庫確保一致 UI。
+  - 使用 `axios` 與後端交互。
+  - 使用 React Router 導航。
+  - 使用 `react-hook-form` 管理表單。
+- **後端**：
+  - 使用 Node.js + Express 構建 RESTful API。
+  - 使用 `mysql2` 連接到 MySQL。
+  - 使用 `nodemailer` 或類似庫發送驗證郵件。
+  - 使用事務確保數據一致性。
+- **資料庫查詢示例**：
+  - 搜索課程和教師：
+    ```sql
+    SELECT c.courseId, c.name, AVG(r.contentRating) AS avgContentRating, ...
+    FROM Course c
+    LEFT JOIN CourseOffering co ON c.courseId = co.courseId
+    LEFT JOIN Review r ON co.courseId = r.courseId AND co.semesterId = r.semesterId
+    WHERE c.status = 'C' AND (c.courseId LIKE ? OR c.name LIKE ? OR EXISTS (
+        SELECT 1 FROM CourseOfferingInstructor coi
+        JOIN Instructor i ON coi.instructorId = i.instructorId
+        WHERE coi.courseId = c.courseId AND i.status = 'C'
+        AND (i.firstName LIKE ? OR i.lastName LIKE ? OR i.email LIKE ?)
+    ))
+    GROUP BY c.courseId;
+    ```
+  - 註冊用戶：
+    ```sql
+    INSERT INTO User (userId, email, password, accessLevel, firstName, lastName, loginFail, createdAt, updatedAt)
+    VALUES (?, ?, ?, 10001, ?, ?, 0, NOW(), NOW());
+    ```
