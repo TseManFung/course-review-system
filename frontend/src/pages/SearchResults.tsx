@@ -74,19 +74,19 @@ const SearchResults: React.FC = () => {
   return (
     <Container sx={{ py: 3 }}>
       <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-        <Typography variant="h6">搜尋結果</Typography>
+        <Typography variant="h6">Search results</Typography>
         <Stack direction="row" spacing={2}>
           <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel id="sort-label">排序</InputLabel>
-            <Select labelId="sort-label" value={sort} label="排序" onChange={(e) => onChangeSort(e.target.value)}>
-              <MenuItem value="reviews">評論數量</MenuItem>
-              <MenuItem value="latest">最新評論</MenuItem>
-              <MenuItem value="rating">總平均評分</MenuItem>
+            <InputLabel id="sort-label">Sort</InputLabel>
+            <Select labelId="sort-label" value={sort} label="Sort" onChange={(e) => onChangeSort(e.target.value)}>
+              <MenuItem value="reviews">Review count</MenuItem>
+              <MenuItem value="latest">Latest</MenuItem>
+              <MenuItem value="rating">Avg rating</MenuItem>
             </Select>
           </FormControl>
           <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel id="limit-label">每頁</InputLabel>
-            <Select labelId="limit-label" value={String(limit)} label="每頁" onChange={(e) => onChangeLimit(Number(e.target.value))}>
+            <InputLabel id="limit-label">Per page</InputLabel>
+            <Select labelId="limit-label" value={String(limit)} label="Per page" onChange={(e) => onChangeLimit(Number(e.target.value))}>
               <MenuItem value="10">10</MenuItem>
               <MenuItem value="20">20</MenuItem>
               <MenuItem value="50">50</MenuItem>
@@ -95,13 +95,13 @@ const SearchResults: React.FC = () => {
         </Stack>
       </Stack>
 
-      {loading && <Typography>載入中…</Typography>}
+      {loading && <Typography>Loading…</Typography>}
       {error && <Typography color="error">{error}</Typography>}
 
       {!loading && rows.length === 0 && (
         <Box textAlign="center" sx={{ py: 6 }}>
-          <Typography sx={{ mb: 2 }}>沒有找到結果</Typography>
-          <Button variant="contained" component={Link} to="/course/create">創建課程</Button>
+          <Typography sx={{ mb: 2 }}>No results found</Typography>
+          <Button variant="contained" component={Link} to="/course/create">Create a course</Button>
         </Box>
       )}
 

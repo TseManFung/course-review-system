@@ -10,10 +10,12 @@ const router = express.Router();
 // POST /auth/login
 router.post('/login', async (req, res) => {
   try {
-    const { userId, password } = req.body || {};
+    let { userId, password } = req.body || {};
     if (!userId || !password) {
       return res.status(400).json({ error: 'userId and password are required' });
     }
+
+    userId = userId.split('@')[0];
 
     const [rows] = await pool.query('SELECT * FROM `User` WHERE userId = ?', [userId]);
     if (rows.length === 0) {
@@ -60,8 +62,8 @@ router.post('/login', async (req, res) => {
 // POST /auth/register
 router.post('/register', async (req, res) => {
   try {
-    const { userId, email, password, firstName, lastName } = req.body || {};
-    if (!userId || !email || !password || !firstName || !lastName) {
+    const { email, password, firstName, lastName } = req.body || {};
+    if (!email || !password || !firstName || !lastName) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
     if (!EMAIL_REGEX.test(email)) {
@@ -76,7 +78,7 @@ router.post('/register', async (req, res) => {
 
     await pool.query(
       'INSERT INTO `User` (userId, email, password, accessLevel, firstName, lastName, loginFail, createdAt, updatedAt) VALUES (?, ?, ?, 10001, ?, ?, 0, NOW(), NOW())',
-      [userId, email, hashed, firstName, lastName]
+      [email.split('@')[0], email, hashed, firstName, lastName]
     );
 
     res.status(201).json({ message: 'Registered. Please verify email via /api/auth/verify?userId=...' });

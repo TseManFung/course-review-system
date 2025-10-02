@@ -142,7 +142,7 @@ const CourseDetail: React.FC = () => {
 
   return (
     <Container sx={{ py: 3 }}>
-      {loading && <Typography>載入中…</Typography>}
+  {loading && <Typography>Loading…</Typography>}
       {error && <Typography color="error">{error}</Typography>}
       {!loading && course && (
         <Stack spacing={3}>
@@ -153,7 +153,7 @@ const CourseDetail: React.FC = () => {
                 <CardContent>
                   <Typography variant="subtitle2" color="text.secondary">{course.courseId}</Typography>
                   <Typography variant="h5" sx={{ mb: 1 }}>{course.name}</Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>系所：{course.departmentName}・學分：{course.credits}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Department: {course.departmentName} · Credits: {course.credits}</Typography>
                   {course.description && (
                     <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>{course.description}</Typography>
                   )}
@@ -163,14 +163,14 @@ const CourseDetail: React.FC = () => {
             <Box>
               <Card>
                 <CardContent>
-                  <Typography variant="subtitle1" sx={{ mb: 1 }}>評論統計</Typography>
+                  <Typography variant="subtitle1" sx={{ mb: 1 }}>Review stats</Typography>
                   <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
                     <RatingComponent label="content" value={stats?.contentRating ?? undefined} />
                     <RatingComponent label="teaching" value={stats?.teachingRating ?? undefined} />
                     <RatingComponent label="grading" value={stats?.gradingRating ?? undefined} />
                     <RatingComponent label="workload" value={stats?.workloadRating ?? undefined} />
                   </Stack>
-                  <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>總評論數：{stats?.count ?? 0}</Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>Total reviews: {stats?.count ?? 0}</Typography>
                 </CardContent>
               </Card>
             </Box>
@@ -179,9 +179,9 @@ const CourseDetail: React.FC = () => {
           {/* 開設資訊 */}
           <Card>
             <CardContent>
-              <Typography variant="subtitle1" sx={{ mb: 1 }}>開設資訊</Typography>
+              <Typography variant="subtitle1" sx={{ mb: 1 }}>Offerings</Typography>
               {offerings.length === 0 ? (
-                <Typography variant="body2" color="text.secondary">尚無開設資訊</Typography>
+                <Typography variant="body2" color="text.secondary">No offerings yet</Typography>
               ) : (
                 <List>
                   {Array.from(
@@ -194,11 +194,11 @@ const CourseDetail: React.FC = () => {
                   ).map(([semId, list]) => (
                     <ListItem key={semId} alignItems="flex-start" divider>
                       <ListItemText
-                        primary={semesterNameById.get(semId) || `學期 ${semId}`}
+                        primary={semesterNameById.get(semId) || `Semester ${semId}`}
                         secondary={
                           list.filter(x => x.firstName || x.lastName).length > 0
-                            ? list.map(x => `${x.lastName ?? ''}${x.firstName ?? ''}`).join('、')
-                            : '（尚無授課教師）'
+                            ? list.map(x => `${x.lastName ?? ''}${x.firstName ?? ''}`).join(', ')
+                            : '(No instructors)'
                         }
                       />
                     </ListItem>
@@ -208,10 +208,10 @@ const CourseDetail: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* 創建評論按鈕（限學生） */}
+          {/* Create review button (students only) */}
           {user && Number(user.accessLevel) === 10000 && (
             <Box>
-              <Button variant="contained" onClick={() => navigate(`/course/${courseId}/review/create`)}>撰寫評論</Button>
+              <Button variant="contained" onClick={() => navigate(`/course/${courseId}/review/create`)}>Write a review</Button>
             </Box>
           )}
 
@@ -219,13 +219,13 @@ const CourseDetail: React.FC = () => {
           <Card>
             <CardContent>
               <Stack direction={{ xs: 'column', md: 'row' }} alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-                <Typography variant="subtitle1">評論列表</Typography>
+                <Typography variant="subtitle1">Reviews</Typography>
                 {total > 0 && (
                   <Typography variant="body2" color="text.secondary">Showing {start} to {end} of {total} reviews</Typography>
                 )}
               </Stack>
               {reviews.length === 0 ? (
-                <Typography variant="body2" color="text.secondary">尚無評論</Typography>
+                <Typography variant="body2" color="text.secondary">No reviews yet</Typography>
               ) : (
                 <List>
                   {reviews.map((rv) => (
@@ -233,7 +233,7 @@ const CourseDetail: React.FC = () => {
                       <Box sx={{ width: '100%' }}>
                         <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} alignItems={{ xs: 'flex-start', md: 'center' }} justifyContent="space-between">
                           <Typography variant="subtitle2" color="text.secondary">
-                            {semesterNameById.get(String(rv.semesterId)) || `學期 ${rv.semesterId}`}
+                            {semesterNameById.get(String(rv.semesterId)) || `Semester ${rv.semesterId}`}
                           </Typography>
                           <Stack direction="row" spacing={1}>
                             <RatingComponent label="content" value={rv.contentRating} />

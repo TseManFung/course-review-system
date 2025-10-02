@@ -92,7 +92,7 @@ const ReviewCreate: React.FC = () => {
     },
   });
 
-  // 僅學生可使用
+  // Students only
   useEffect(() => {
     if (!user) return; // 等待狀態載入
     if (user && user.accessLevel !== 10000) {
@@ -100,7 +100,7 @@ const ReviewCreate: React.FC = () => {
     }
   }, [user, navigate, courseId]);
 
-  // 載入 course offerings -> 學期清單
+  // Load course offerings -> semester list
   useEffect(() => {
     let mounted = true;
     if (!courseId) return;
@@ -131,7 +131,7 @@ const ReviewCreate: React.FC = () => {
     };
   }, [courseId, setValue]);
 
-  // 依據選取學期，取得既有教師（來自 offerings）
+  // For selected semester, get existing instructors (from offerings)
   const semesterInstructors: InstructorEntry[] = useMemo(() => {
     const byId = new Map<string | number, InstructorEntry>();
     offerings
@@ -150,7 +150,7 @@ const ReviewCreate: React.FC = () => {
     return Array.from(byId.values());
   }, [offerings, selectedSemesterId]);
 
-  // 合併：學期已有教師 + 搜尋結果（去重）
+  // Merge: existing instructors + search results (dedupe)
   const mergedInstructorOptions: InstructorEntry[] = useMemo(() => {
     const map = new Map<string | number, InstructorEntry>();
     for (const i of semesterInstructors) map.set(i.instructorId, i);
@@ -158,7 +158,7 @@ const ReviewCreate: React.FC = () => {
     return Array.from(map.values()).sort((a, b) => `${a.lastName}${a.firstName}`.localeCompare(`${b.lastName}${b.firstName}`));
   }, [semesterInstructors, searchResults]);
 
-  // 搜尋教師
+  // Search instructors
   const runSearch = async (q: string) => {
     const qq = q.trim();
     if (!qq) {
@@ -174,20 +174,20 @@ const ReviewCreate: React.FC = () => {
     }
   };
 
-  // 監看學期切換，清空（或保留）所選教師
+  // When switching semester, clear selected instructor
   useEffect(() => {
     setValue('instructorId', '');
   }, [selectedSemesterId, setValue]);
 
-  // Rating 驗證（0-10 整數）
+  // Rating validation (0-10 integer)
   const validateRating = (v?: number) => typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= 10;
 
   const onSubmit = async (values: FormValues) => {
-    // 前端驗證
+  // Frontend validation
     const ok = [values.contentRating, values.teachingRating, values.gradingRating, values.workloadRating].every(validateRating);
     if (!ok) return;
 
-    // 檢查是否已評論
+  // Check duplicate review
     const { data: chk } = await api.get<{ exists: boolean }>(`/review/check`, {
       params: { courseId, semesterId: values.semesterId },
     });
@@ -196,7 +196,7 @@ const ReviewCreate: React.FC = () => {
       return;
     }
 
-    // 提交（後端會自動確保 CourseOffering 存在）
+  // Submit (backend will ensure CourseOffering exists)
     await api.post(`/review`, {
       courseId,
       semesterId: values.semesterId,
@@ -210,25 +210,23 @@ const ReviewCreate: React.FC = () => {
     navigate(`/course/${courseId}`);
   };
 
-  // 若未登入或尚未載入 user 狀態，顯示簡要提示
+  // If not logged in, show a hint
   if (!user) {
     return (
       <Box p={3}>
-        <Typography variant="h6">請先登入以撰寫評論。</Typography>
+        <Typography variant="h6">Please log in to write a review.</Typography>
       </Box>
     );
   }
 
   return (
     <Box p={2} maxWidth={900} mx="auto">
-      <Typography variant="h5" gutterBottom>
-        創建課程評論
-      </Typography>
+      <Typography variant="h5" gutterBottom>Write a course review</Typography>
 
       <Card variant="outlined">
         <CardContent>
           <Stack component="form" spacing={3} onSubmit={handleSubmit(onSubmit)}>
-            {/* 課程與學期 */}
+            {/* Course and semester */}
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
               <TextField label="Course ID" value={courseId} fullWidth disabled />
 
@@ -258,13 +256,13 @@ const ReviewCreate: React.FC = () => {
                   control={control}
                   rules={{
                     required: true,
-                    pattern: { value: /^[0-9]{4}sem[1-3]$/, message: '格式應為 YYYYsem1-3，如 2024sem1' },
+                    pattern: { value: /^[0-9]{4}sem[1-3]$/, message: 'Format should be YYYYsem1-3, e.g. 2024sem1' },
                   }}
                   render={({ field }) => (
                     <TextField
                       {...field}
-                      label="Semester ID（手動輸入）"
-                      placeholder="例如：2024sem1"
+                      label="Semester ID (manual)"
+                      placeholder="e.g. 2024sem1"
                       fullWidth
                       onChange={(e) => {
                         field.onChange(e);
@@ -279,25 +277,25 @@ const ReviewCreate: React.FC = () => {
               )}
             </Stack>
 
-            {/* 教師搜尋與選擇（僅 UI） */}
+            {/* Instructor search and selection (UI only) */}
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="flex-start">
               <TextField
-                label="搜索教師（姓名或電郵）"
+                label="Search instructor (name or email)"
                 placeholder="e.g. John, Lee, john@..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 fullWidth
               />
               <Button variant="outlined" onClick={() => runSearch(searchQuery)} disabled={loadingInstructors}>
-                {loadingInstructors ? '搜尋中...' : '刷新教師列表'}
+                {loadingInstructors ? 'Searching...' : 'Refresh instructors'}
               </Button>
               <Button variant="contained" color="secondary" onClick={() => navigate('/instructor/create', { state: { from: location.pathname } })}>
-                創建教師
+                Create instructor
               </Button>
             </Stack>
 
             <FormControl fullWidth>
-              <InputLabel id="instructorId-label">Instructor（可選，用於參考）</InputLabel>
+              <InputLabel id="instructorId-label">Instructor (optional)</InputLabel>
               <Controller
                 name="instructorId"
                 control={control}
@@ -305,10 +303,10 @@ const ReviewCreate: React.FC = () => {
                   <Select
                     {...field}
                     labelId="instructorId-label"
-                    label="Instructor（可選，用於參考）"
+                    label="Instructor (optional)"
                   >
                     <MenuItem value="">
-                      <em>未選擇</em>
+                      <em>None</em>
                     </MenuItem>
                     {mergedInstructorOptions.map((ins) => (
                       <MenuItem key={String(ins.instructorId)} value={String(ins.instructorId)}>
@@ -321,10 +319,10 @@ const ReviewCreate: React.FC = () => {
               />
             </FormControl>
 
-            {/* 四個評分（0-10） */}
+            {/* Four ratings (0-10) */}
             <Box>
               <Typography variant="subtitle1" gutterBottom>
-                評分（0-10）
+                Ratings (0-10)
               </Typography>
               <Stack spacing={2}>
                 <Controller
@@ -333,7 +331,7 @@ const ReviewCreate: React.FC = () => {
                   rules={{ validate: validateRating }}
                   render={({ field }) => (
                     <Stack direction="row" alignItems="center" spacing={2}>
-                      <Box minWidth={140}>內容評分</Box>
+                      <Box minWidth={140}>Content</Box>
                       <Rating max={10} precision={1} value={field.value} onChange={(_, v) => field.onChange(v ?? 0)} />
                     </Stack>
                   )}
@@ -344,7 +342,7 @@ const ReviewCreate: React.FC = () => {
                   rules={{ validate: validateRating }}
                   render={({ field }) => (
                     <Stack direction="row" alignItems="center" spacing={2}>
-                      <Box minWidth={140}>教學評分</Box>
+                      <Box minWidth={140}>Teaching</Box>
                       <Rating max={10} precision={1} value={field.value} onChange={(_, v) => field.onChange(v ?? 0)} />
                     </Stack>
                   )}
@@ -355,7 +353,7 @@ const ReviewCreate: React.FC = () => {
                   rules={{ validate: validateRating }}
                   render={({ field }) => (
                     <Stack direction="row" alignItems="center" spacing={2}>
-                      <Box minWidth={140}>評核公平</Box>
+                      <Box minWidth={140}>Grading fairness</Box>
                       <Rating max={10} precision={1} value={field.value} onChange={(_, v) => field.onChange(v ?? 0)} />
                     </Stack>
                   )}
@@ -366,7 +364,7 @@ const ReviewCreate: React.FC = () => {
                   rules={{ validate: validateRating }}
                   render={({ field }) => (
                     <Stack direction="row" alignItems="center" spacing={2}>
-                      <Box minWidth={140}>工作量</Box>
+                      <Box minWidth={140}>Workload</Box>
                       <Rating max={10} precision={1} value={field.value} onChange={(_, v) => field.onChange(v ?? 0)} />
                     </Stack>
                   )}
@@ -374,12 +372,12 @@ const ReviewCreate: React.FC = () => {
               </Stack>
               {(errors.contentRating || errors.teachingRating || errors.gradingRating || errors.workloadRating) && (
                 <Typography color="error" variant="body2" mt={1}>
-                  請為四個項目提供 0-10 的整數評分。
+                  Please provide integer ratings (0-10) for all four items.
                 </Typography>
               )}
             </Box>
 
-            {/* 評論內容 */}
+            {/* Comment */}
             <Controller
               name="comment"
               control={control}
@@ -389,8 +387,8 @@ const ReviewCreate: React.FC = () => {
               render={({ field }) => (
                 <TextField
                   {...field}
-                  label="評論內容（最多 1000 字，可留空）"
-                  placeholder="分享你的修課體驗與建議..."
+                  label="Comment (max 1000 chars, optional)"
+                  placeholder="Share your experience and suggestions..."
                   multiline
                   minRows={4}
                   inputProps={{ maxLength: 1000 }}
@@ -400,39 +398,39 @@ const ReviewCreate: React.FC = () => {
             />
             {errors.comment && (
               <Typography color="error" variant="body2">
-                評論長度不可超過 1000 字。
+                Comment length must not exceed 1000 characters.
               </Typography>
             )}
 
             <Stack direction="row" spacing={2} justifyContent="flex-end">
               <Button variant="outlined" onClick={() => navigate(-1)}>
-                取消
+                Cancel
               </Button>
               <Button type="submit" variant="contained" disabled={isSubmitting || !selectedSemesterId}>
-                提交評論
+                Submit review
               </Button>
             </Stack>
           </Stack>
         </CardContent>
       </Card>
 
-      {/* 重複評論對話框 */}
+      {/* Duplicate review dialog */}
       <Dialog open={dupDialogOpen} onClose={() => setDupDialogOpen(false)}>
-        <DialogTitle>已提交過該課程開設的評論</DialogTitle>
+        <DialogTitle>Review already submitted</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            你已經評論過此課程在所選學期的開設。是否前往查看你的評論歷史？
+            You have already submitted a review for this course in the selected semester. Go to your review history?
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDupDialogOpen(false)}>留在本頁</Button>
+          <Button onClick={() => setDupDialogOpen(false)}>Stay here</Button>
           <Button
             onClick={() => {
               setDupDialogOpen(false);
               navigate('/profile');
             }}
           >
-            前往歷史
+            Go to history
           </Button>
         </DialogActions>
       </Dialog>

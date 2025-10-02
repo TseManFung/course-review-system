@@ -26,13 +26,13 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <AppBar position="static" color="primary">
         <Toolbar>
           <Typography variant="h6" component={Link} to="/" sx={{ flexGrow: 1, color: 'inherit', textDecoration: 'none' }}>
-            課程評價系統
+            Course Review System
           </Typography>
           <Box component="form" onSubmit={onSearch} sx={{ mr: 2, display: { xs: 'none', sm: 'block' }, width: 360, maxWidth: '40vw' }}>
             <TextField
               fullWidth
               size="small"
-              placeholder="搜尋課程 / 代碼 / 教師"
+              placeholder="Search courses / code / instructor"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               InputProps={{
@@ -45,7 +45,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             />
           </Box>
           {user && Number(user.accessLevel) === 0 && (
-            <Button color="inherit" component={Link} to="/admin" sx={{ mr: 1 }}>管理頁面</Button>
+            <Button color="inherit" component={Link} to="/admin" sx={{ mr: 1 }}>Admin</Button>
           )}
           {user ? (
             <>
@@ -58,14 +58,14 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 </Button>
               </Stack>
               <Menu anchorEl={anchorEl} open={open} onClose={() => setAnchorEl(null)}>
-                <MenuItem component={Link} to="/profile" onClick={() => setAnchorEl(null)}>更改個人資料</MenuItem>
-                <MenuItem component={Link} to="/profile#reviews" onClick={() => setAnchorEl(null)}>評論歷史</MenuItem>
-                <MenuItem onClick={() => { toggle(); setAnchorEl(null); }}>切換主題</MenuItem>
-                <MenuItem onClick={() => { logout(); setAnchorEl(null); }}>登出</MenuItem>
+                <MenuItem component={Link} to="/profile" onClick={() => setAnchorEl(null)}>Profile</MenuItem>
+                <MenuItem component={Link} to="/profile#reviews" onClick={() => setAnchorEl(null)}>My reviews</MenuItem>
+                <MenuItem onClick={() => { toggle(); setAnchorEl(null); }}>Toggle theme</MenuItem>
+                <MenuItem onClick={() => { logout(); setAnchorEl(null); }}>Logout</MenuItem>
               </Menu>
             </>
           ) : (
-            <Button color="inherit" component={Link} to="/">登入 / 註冊</Button>
+            <Button color="inherit" component={Link} to="/">Log in / Sign up</Button>
           )}
           <IconButton color="inherit" onClick={toggle} sx={{ ml: 1 }} aria-label="toggle theme">
             {mode === 'light' ? <Brightness4Icon /> : <Brightness7Icon />}

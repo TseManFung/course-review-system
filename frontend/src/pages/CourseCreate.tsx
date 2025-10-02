@@ -71,15 +71,15 @@ const CourseCreate: React.FC = () => {
   const onSubmit = async (data: FormValues) => {
     setError(null);
     if (data.courseId.trim().length < 6) {
-      setError('courseId 長度需 >= 6');
+      setError('courseId length must be >= 6');
       return;
     }
     if (data.name.trim().length > 100) {
-      setError('name 最多 100 字');
+      setError('name max length is 100');
       return;
     }
     if (data.credits < 0 || data.credits > 6) {
-      setError('credits 需介於 0 到 6');
+      setError('credits must be between 0 and 6');
       return;
     }
     const exists = await checkCourseExists(data.courseId.trim());
@@ -99,7 +99,7 @@ const CourseCreate: React.FC = () => {
       });
       navigate('/search');
     } catch (e: any) {
-      setError(e?.response?.data?.error || '建立課程失敗');
+      setError(e?.response?.data?.error || 'Failed to create course');
     } finally {
       setLoading(false);
     }
@@ -108,19 +108,19 @@ const CourseCreate: React.FC = () => {
   const canSubmit = formState.isValid;
 
   if (!user || Number(user.accessLevel) !== 0) {
-    return <Alert severity="warning">此頁需要管理員權限。</Alert>;
+    return <Alert severity="warning">Admin only</Alert>;
   }
 
   return (
     <Stack spacing={3}>
-      <Typography variant="h5">建立課程</Typography>
+      <Typography variant="h5">Create course</Typography>
       {error && <Alert severity="error">{error}</Alert>}
       <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ maxWidth: 720 }}>
         <Stack spacing={2}>
           <TextField
             label="courseId"
             fullWidth
-            {...register('courseId', { required: '必填', minLength: { value: 6, message: '至少 6 字' } })}
+            {...register('courseId', { required: 'Required', minLength: { value: 6, message: 'Min 6 chars' } })}
             error={!!formState.errors.courseId}
             helperText={formState.errors.courseId?.message}
           />
@@ -143,7 +143,7 @@ const CourseCreate: React.FC = () => {
           <TextField
             label="name"
             fullWidth
-            {...register('name', { required: '必填', maxLength: { value: 100, message: '最多 100 字' } })}
+            {...register('name', { required: 'Required', maxLength: { value: 100, message: 'Max 100 chars' } })}
             error={!!formState.errors.name}
             helperText={formState.errors.name?.message}
           />
@@ -160,28 +160,28 @@ const CourseCreate: React.FC = () => {
             label="credits"
             type="number"
             inputProps={{ min: 0, max: 6 }}
-            {...register('credits', { required: '必填', min: { value: 0, message: '最小 0' }, max: { value: 6, message: '最大 6' }, valueAsNumber: true })}
+            {...register('credits', { required: 'Required', min: { value: 0, message: 'Min 0' }, max: { value: 6, message: 'Max 6' }, valueAsNumber: true })}
             error={!!formState.errors.credits}
             helperText={formState.errors.credits?.message}
           />
 
           <Stack direction="row" spacing={2}>
-            <Button type="submit" variant="contained" disabled={loading || !canSubmit}>建立</Button>
-            <Button variant="outlined" onClick={() => navigate(-1)}>返回</Button>
+            <Button type="submit" variant="contained" disabled={loading || !canSubmit}>Create</Button>
+            <Button variant="outlined" onClick={() => navigate(-1)}>Back</Button>
           </Stack>
         </Stack>
       </Box>
 
       <Dialog open={existsDialog.open} onClose={() => setExistsDialog({ open: false, courseId: null })}>
-        <DialogTitle>課程已存在</DialogTitle>
+        <DialogTitle>Course exists</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            課程 {existsDialog.courseId} 已存在。你要前往該課程資訊頁面，或關閉對話框重新輸入？
+            Course {existsDialog.courseId} already exists. Go to course page, or close and edit form?
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setExistsDialog({ open: false, courseId: null })}>重新輸入</Button>
-          <Button onClick={() => navigate(`/course/${existsDialog.courseId}`)} variant="contained">前往課程</Button>
+          <Button onClick={() => setExistsDialog({ open: false, courseId: null })}>Edit form</Button>
+          <Button onClick={() => navigate(`/course/${existsDialog.courseId}`)} variant="contained">Go to course</Button>
         </DialogActions>
       </Dialog>
     </Stack>

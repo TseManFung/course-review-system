@@ -117,11 +117,11 @@ ALTER TABLE `ReviewComment` ADD FOREIGN KEY (`reviewId`) REFERENCES `Review` (`r
 
 INSERT INTO `User` (`userId`, `email`, `password`, `accessLevel`, `firstName`, `lastName`, `loginFail`, `createdAt`, `updatedAt`)
 VALUES
-  ('S001', 'alice.chan@connect.polyu.hk', '$2a$12$/7doXvzEmW5T8Hxrz5gAjuczBBpol58us2CS09MVN9p5SZ90TAjGm', 10000, 'Alice', 'Chan', 0, '2023-09-01 10:00:00', '2023-09-01 10:00:00'),
-  ('S002', 'bob.wong@connect.polyu.hk', '$2a$12$/7doXvzEmW5T8Hxrz5gAjuczBBpol58us2CS09MVN9p5SZ90TAjGm', 10000, 'Bob', 'Wong', 1, '2023-09-02 12:00:00', '2023-09-03 15:00:00'),
-  ('S003', 'cathy.lau@connect.polyu.hk', '$2a$12$/7doXvzEmW5T8Hxrz5gAjuczBBpol58us2CS09MVN9p5SZ90TAjGm', 10000, 'Cathy', 'Lau', 0, '2023-09-03 14:00:00', '2023-09-03 14:00:00'),
-  ('M001', 'moderator@polyu.edu.hk', '$2a$12$/7doXvzEmW5T8Hxrz5gAjuczBBpol58us2CS09MVN9p5SZ90TAjGm', 100, 'David', 'Ho', 0, '2023-08-01 09:00:00', '2023-08-01 09:00:00'),
-  ('A001', 'admin@polyu.edu.hk', '$2a$12$/7doXvzEmW5T8Hxrz5gAjuczBBpol58us2CS09MVN9p5SZ90TAjGm', 0, 'Emma', 'Ng', 0, '2023-08-01 08:00:00', '2023-08-01 08:00:00');
+  ('alice.chan', 'alice.chan@connect.polyu.hk', '$2a$12$/7doXvzEmW5T8Hxrz5gAjuczBBpol58us2CS09MVN9p5SZ90TAjGm', 10000, 'Alice', 'Chan', 0, '2023-09-01 10:00:00', '2023-09-01 10:00:00'),
+  ('bob.wong', 'bob.wong@connect.polyu.hk', '$2a$12$/7doXvzEmW5T8Hxrz5gAjuczBBpol58us2CS09MVN9p5SZ90TAjGm', 10000, 'Bob', 'Wong', 1, '2023-09-02 12:00:00', '2023-09-03 15:00:00'),
+  ('cathy.lau', 'cathy.lau@connect.polyu.hk', '$2a$12$/7doXvzEmW5T8Hxrz5gAjuczBBpol58us2CS09MVN9p5SZ90TAjGm', 10000, 'Cathy', 'Lau', 0, '2023-09-03 14:00:00', '2023-09-03 14:00:00'),
+  ('moderator', 'moderator@polyu.edu.hk', '$2a$12$/7doXvzEmW5T8Hxrz5gAjuczBBpol58us2CS09MVN9p5SZ90TAjGm', 100, 'David', 'Ho', 0, '2023-08-01 09:00:00', '2023-08-01 09:00:00'),
+  ('admin', 'admin@polyu.edu.hk', '$2a$12$/7doXvzEmW5T8Hxrz5gAjuczBBpol58us2CS09MVN9p5SZ90TAjGm', 0, 'Emma', 'Ng', 0, '2023-08-01 08:00:00', '2023-08-01 08:00:00');
 
 INSERT INTO `Department` (`departmentId`, `name`)
 VALUES
@@ -172,11 +172,11 @@ INSERT INTO `Review` (
   `createdAt`, `status`
 )
 VALUES
-  (0, 'S001', 'COMP1010', '2023sem1', 8, 7, 6, 5, '2023-12-01 10:00:00', 'C'),
-  (1, 'S002', 'COMP2020', '2023sem2', 6, 5, 4, 7, '2023-12-02 12:00:00', 'C'),
-  (2, 'S003', 'MATH1010', '2023sem1', 9, 8, 9, 4, '2023-12-15 15:00:00', 'C'),
-  (3, 'S001', 'COMP1010', '2024sem1', 7, 6, 7, 6, '2023-12-10 09:00:00', 'C'),
-  (4, 'S002', 'COMP1010', '2024sem1', 8, 9, 8, 5, '2024-05-01 11:00:00', 'C');
+  (0, 'alice.chan', 'COMP1010', '2023sem1', 8, 7, 6, 5, '2023-12-01 10:00:00', 'C'),
+  (1, 'bob.wong', 'COMP2020', '2023sem2', 6, 5, 4, 7, '2023-12-02 12:00:00', 'C'),
+  (2, 'cathy.lau', 'MATH1010', '2023sem1', 9, 8, 9, 4, '2023-12-15 15:00:00', 'C'),
+  (3, 'alice.chan', 'COMP1010', '2024sem1', 7, 6, 7, 6, '2023-12-10 09:00:00', 'C'),
+  (4, 'bob.wong', 'COMP1010', '2024sem1', 8, 9, 8, 5, '2024-05-01 11:00:00', 'C');
 
 INSERT INTO `ReviewComment` (`reviewId`, `comment`)
 VALUES

@@ -8,12 +8,22 @@ const router = express.Router();
 router.get('/', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { offset, limit } = buildPagination(req);
+    const search = (req.query.search || '').toString().trim();
+    const like = `%${search}%`;
+    const where = search
+      ? "WHERE r.status = 'C' AND (r.userId LIKE ? OR r.courseId LIKE ? OR r.semesterId LIKE ? OR rc.comment LIKE ?)"
+      : "WHERE r.status = 'C'";
+    const params = search ? [like, like, like, like] : [];
+
     const [rows] = await pool.query(
       `SELECT r.*, rc.comment FROM Review r LEFT JOIN ReviewComment rc ON r.reviewId = rc.reviewId
-       WHERE r.status = 'C' ORDER BY r.createdAt DESC LIMIT ? OFFSET ?`,
-      [limit, offset]
+       ${where} ORDER BY r.createdAt DESC LIMIT ? OFFSET ?`,
+      [...params, limit, offset]
     );
-    const [[{ total }]] = await pool.query("SELECT COUNT(*) AS total FROM Review WHERE status = 'C'");
+    const [[{ total }]] = await pool.query(
+      `SELECT COUNT(*) AS total FROM Review r LEFT JOIN ReviewComment rc ON r.reviewId = rc.reviewId ${where}`,
+      params
+    );
     res.json({ total, rows });
   } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to fetch reviews' }); }
 });
@@ -30,6 +40,26 @@ router.get('/check', authenticateToken, async (req, res) => {
     );
     res.json({ exists: !!row });
   } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to check review' }); }
+});
+
+// GET /review/my - list reviews of current user (non-admin), paginated
+router.get('/my', authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const { offset, limit } = buildPagination(req);
+    const [rows] = await pool.query(
+      `SELECT r.*, rc.comment FROM Review r
+       LEFT JOIN ReviewComment rc ON r.reviewId = rc.reviewId
+       WHERE r.userId = ? AND r.status = 'C'
+       ORDER BY r.createdAt DESC LIMIT ? OFFSET ?`,
+      [userId, limit, offset]
+    );
+    const [[{ total }]] = await pool.query(
+      `SELECT COUNT(*) AS total FROM Review WHERE userId = ? AND status = 'C'`,
+      [userId]
+    );
+    res.json({ total, rows });
+  } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to fetch my reviews' }); }
 });
 
 // POST /review - create a review (auto create CourseOffering if needed)

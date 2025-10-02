@@ -74,11 +74,11 @@ const InstructorCreate: React.FC = () => {
   const onSubmit = async (data: FormValues) => {
     setError(null);
     if (data.firstName.trim().length > 50 || data.lastName.trim().length > 50) {
-      setError('firstName/lastName 最多 50 字');
+      setError('firstName/lastName max length is 50');
       return;
     }
     if (data.email && !EMAIL_REGEX.test(data.email)) {
-      setError('Email 格式不正確');
+      setError('Invalid email format');
       return;
     }
     const exists = await checkEmailExists(data.email?.trim());
@@ -95,11 +95,11 @@ const InstructorCreate: React.FC = () => {
         email: data.email?.trim() || null,
         departmentId: data.departmentId,
       });
-      // 成功後導航：若來源是「撰寫評論」頁面，返回上一頁（常見流程），否則回首頁或搜尋。
+      // After success: if coming from review-create, go back; otherwise home/search.
       if (location.state?.from === 'review-create') navigate(-1);
       else navigate('/');
     } catch (e: any) {
-      setError(e?.response?.data?.error || '建立教師失敗');
+      setError(e?.response?.data?.error || 'Failed to create instructor');
     } finally {
       setLoading(false);
     }
@@ -108,12 +108,12 @@ const InstructorCreate: React.FC = () => {
   const canSubmit = formState.isValid;
 
   if (!user || Number(user.accessLevel) !== 0) {
-    return <Alert severity="warning">此頁需要管理員權限。</Alert>;
+    return <Alert severity="warning">Admin only</Alert>;
   }
 
   return (
     <Stack spacing={3}>
-      <Typography variant="h5">建立教師</Typography>
+      <Typography variant="h5">Create instructor</Typography>
       {error && <Alert severity="error">{error}</Alert>}
       <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ maxWidth: 720 }}>
         <Stack spacing={2}>
@@ -121,21 +121,21 @@ const InstructorCreate: React.FC = () => {
             <TextField
               label="firstName"
               fullWidth
-              {...register('firstName', { required: '必填', maxLength: { value: 50, message: '最多 50 字' } })}
+              {...register('firstName', { required: 'Required', maxLength: { value: 50, message: 'Max 50 chars' } })}
               error={!!formState.errors.firstName}
               helperText={formState.errors.firstName?.message}
             />
             <TextField
               label="lastName"
               fullWidth
-              {...register('lastName', { required: '必填', maxLength: { value: 50, message: '最多 50 字' } })}
+              {...register('lastName', { required: 'Required', maxLength: { value: 50, message: 'Max 50 chars' } })}
               error={!!formState.errors.lastName}
               helperText={formState.errors.lastName?.message}
             />
           </Stack>
 
           <TextField
-            label="email (可選)"
+            label="email (optional)"
             fullWidth
             {...register('email')}
             error={!!formState.errors.email}
@@ -158,21 +158,21 @@ const InstructorCreate: React.FC = () => {
           </FormControl>
 
           <Stack direction="row" spacing={2}>
-            <Button type="submit" variant="contained" disabled={loading || !canSubmit}>建立</Button>
-            <Button variant="outlined" onClick={() => navigate(-1)}>返回</Button>
+            <Button type="submit" variant="contained" disabled={loading || !canSubmit}>Create</Button>
+            <Button variant="outlined" onClick={() => navigate(-1)}>Back</Button>
           </Stack>
         </Stack>
       </Box>
 
       <Dialog open={existsDialog} onClose={() => setExistsDialog(false)}>
-        <DialogTitle>Email 已存在</DialogTitle>
+        <DialogTitle>Email already exists</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            此 Email 已經有對應的教師，請重新輸入或清空 Email 後再試。
+            This email already has a mapped instructor. Please change or clear it and try again.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setExistsDialog(false)} autoFocus>重新輸入</Button>
+          <Button onClick={() => setExistsDialog(false)} autoFocus>Edit form</Button>
         </DialogActions>
       </Dialog>
     </Stack>

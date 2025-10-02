@@ -65,7 +65,7 @@ const Admin: React.FC = () => {
   const [currentRow, setCurrentRow] = useState<any | null>(null);
   const [detailData, setDetailData] = useState<any | null>(null);
 
-  // 權限：僅管理員
+  // Permission: admin only
   useEffect(() => {
     if (!user) return;
     if (user.accessLevel !== 0) {
@@ -74,7 +74,7 @@ const Admin: React.FC = () => {
     }
   }, [user]);
 
-  // 欄位配置
+  // Column config
   const columns: GridColDef[] = useMemo(() => {
     switch (active) {
       case 'department':
@@ -201,7 +201,7 @@ const Admin: React.FC = () => {
     }
   }, [active]);
 
-  // 資料載入
+  // Data loading
   const loadData = async () => {
     try {
       setLoading(true);
@@ -226,10 +226,10 @@ const Admin: React.FC = () => {
 
   const refresh = () => loadData();
 
-  // 事件：切換類型
+  // Event: switch entity
   const switchTo = (k: EntityKind) => { setActive(k); setPage(1); setSearch(''); };
 
-  // 行為：詳細（使用者）
+  // Action: user detail
   async function handleUserDetail(row: any) {
     setCurrentRow(row);
     const { data } = await api.get(`/user/${row.userId}/details`);
@@ -237,7 +237,7 @@ const Admin: React.FC = () => {
     setDetailOpen(true);
   }
 
-  // 行為：刪除（邏輯 delete）
+  // Action: delete (logical)
   async function handleDeleteConfirm() {
     if (!currentRow) return;
     const id = currentRow.reviewId ?? currentRow.courseId ?? currentRow.semesterId ?? currentRow.departmentId ?? currentRow.instructorId ?? currentRow.encouragementId;
@@ -255,7 +255,7 @@ const Admin: React.FC = () => {
     refresh();
   }
 
-  // 行為：建立
+  // Action: create
   async function handleCreateSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
@@ -270,7 +270,7 @@ const Admin: React.FC = () => {
     refresh();
   }
 
-  // 行為：編輯
+  // Action: edit
   async function handleEditSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!currentRow) return;
@@ -300,7 +300,7 @@ const Admin: React.FC = () => {
     refresh();
   }
 
-  // 行為：封鎖/解封
+  // Action: block/unblock
   async function handleBlockConfirm() {
     if (!currentRow) return;
     const blocked = currentRow.accessLevel < 0;
@@ -320,8 +320,8 @@ const Admin: React.FC = () => {
           <TextField name="departmentId" label="departmentId" required />
           <TextField name="name" label="name" required />
           <DialogActions>
-            <Button onClick={() => setCreateOpen(false)}>取消</Button>
-            <Button type="submit" variant="contained">提交</Button>
+            <Button onClick={() => setCreateOpen(false)}>Cancel</Button>
+            <Button type="submit" variant="contained">Submit</Button>
           </DialogActions>
         </Stack>
       );
@@ -332,8 +332,8 @@ const Admin: React.FC = () => {
           <TextField name="semesterId" label="semesterId (YYYYsem1-3)" required />
           <TextField name="name" label="name" required />
           <DialogActions>
-            <Button onClick={() => setCreateOpen(false)}>取消</Button>
-            <Button type="submit" variant="contained">提交</Button>
+            <Button onClick={() => setCreateOpen(false)}>Cancel</Button>
+            <Button type="submit" variant="contained">Submit</Button>
           </DialogActions>
         </Stack>
       );
@@ -343,13 +343,13 @@ const Admin: React.FC = () => {
         <Stack component="form" onSubmit={handleCreateSubmit} spacing={2}>
           <TextField name="content" label="content" required multiline minRows={3} inputProps={{ maxLength: 248 }} />
           <DialogActions>
-            <Button onClick={() => setCreateOpen(false)}>取消</Button>
-            <Button type="submit" variant="contained">提交</Button>
+            <Button onClick={() => setCreateOpen(false)}>Cancel</Button>
+            <Button type="submit" variant="contained">Submit</Button>
           </DialogActions>
         </Stack>
       );
     }
-    return <Typography>此模組不支援建立新資料</Typography>;
+  return <Typography>This module does not support creation</Typography>;
   };
 
   const renderEditForm = () => {
@@ -360,8 +360,8 @@ const Admin: React.FC = () => {
           <TextField label="departmentId" value={currentRow.departmentId} disabled />
           <TextField name="name" label="name" defaultValue={currentRow.name} required />
           <DialogActions>
-            <Button onClick={() => setEditOpen(false)}>取消</Button>
-            <Button type="submit" variant="contained">儲存</Button>
+            <Button onClick={() => setEditOpen(false)}>Cancel</Button>
+            <Button type="submit" variant="contained">Save</Button>
           </DialogActions>
         </Stack>
       );
@@ -372,8 +372,8 @@ const Admin: React.FC = () => {
           <TextField label="semesterId" value={currentRow.semesterId} disabled />
           <TextField name="name" label="name" defaultValue={currentRow.name} required />
           <DialogActions>
-            <Button onClick={() => setEditOpen(false)}>取消</Button>
-            <Button type="submit" variant="contained">儲存</Button>
+            <Button onClick={() => setEditOpen(false)}>Cancel</Button>
+            <Button type="submit" variant="contained">Save</Button>
           </DialogActions>
         </Stack>
       );
@@ -387,8 +387,8 @@ const Admin: React.FC = () => {
           <TextField name="description" label="description" defaultValue={currentRow.description} multiline minRows={3} />
           <TextField name="credits" label="credits" type="number" defaultValue={currentRow.credits} />
           <DialogActions>
-            <Button onClick={() => setEditOpen(false)}>取消</Button>
-            <Button type="submit" variant="contained">儲存</Button>
+            <Button onClick={() => setEditOpen(false)}>Cancel</Button>
+            <Button type="submit" variant="contained">Save</Button>
           </DialogActions>
         </Stack>
       );
@@ -402,8 +402,8 @@ const Admin: React.FC = () => {
           <TextField name="email" label="email" defaultValue={currentRow.email} />
           <TextField name="departmentId" label="departmentId" defaultValue={currentRow.departmentId} />
           <DialogActions>
-            <Button onClick={() => setEditOpen(false)}>取消</Button>
-            <Button type="submit" variant="contained">儲存</Button>
+            <Button onClick={() => setEditOpen(false)}>Cancel</Button>
+            <Button type="submit" variant="contained">Save</Button>
           </DialogActions>
         </Stack>
       );
@@ -420,12 +420,12 @@ const Admin: React.FC = () => {
         </Stack>
       );
     }
-    return <Typography>此模組暫無編輯表單</Typography>;
+  return <Typography>No edit form for this module</Typography>;
   };
 
   return (
     <Box sx={{ display: 'flex' }}>
-      {/* 側邊欄 */}
+  {/* Sidebar */}
       <Drawer variant="persistent" open={drawerOpen}>
         <Toolbar sx={{ minWidth: 260 }}>
           <Stack direction="row" alignItems="center" justifyContent="space-between" width="100%">
@@ -436,26 +436,26 @@ const Admin: React.FC = () => {
         <Divider />
         <Box p={2}>
           <Stack spacing={1}>
-            <Button variant={active==='department'?'contained':'text'} onClick={() => switchTo('department')}>查看學系</Button>
-            <Button variant={active==='semester'?'contained':'text'} onClick={() => switchTo('semester')}>查看學期</Button>
-            <Button variant={active==='course'?'contained':'text'} onClick={() => switchTo('course')}>查看課程</Button>
-            <Button variant={active==='review'?'contained':'text'} onClick={() => switchTo('review')}>查看評論</Button>
-            <Button variant={active==='instructor'?'contained':'text'} onClick={() => switchTo('instructor')}>查看教師</Button>
-            <Button variant={active==='encouragement'?'contained':'text'} onClick={() => switchTo('encouragement')}>管理加油句子</Button>
-            <Button variant={active==='user'?'contained':'text'} onClick={() => switchTo('user')}>管理用戶</Button>
+            <Button variant={active==='department'?'contained':'text'} onClick={() => switchTo('department')}>Departments</Button>
+            <Button variant={active==='semester'?'contained':'text'} onClick={() => switchTo('semester')}>Semesters</Button>
+            <Button variant={active==='course'?'contained':'text'} onClick={() => switchTo('course')}>Courses</Button>
+            <Button variant={active==='review'?'contained':'text'} onClick={() => switchTo('review')}>Reviews</Button>
+            <Button variant={active==='instructor'?'contained':'text'} onClick={() => switchTo('instructor')}>Instructors</Button>
+            <Button variant={active==='encouragement'?'contained':'text'} onClick={() => switchTo('encouragement')}>Encouragement</Button>
+            <Button variant={active==='user'?'contained':'text'} onClick={() => switchTo('user')}>Users</Button>
           </Stack>
 
           <Divider sx={{ my: 2 }} />
           <Stack spacing={1}>
-            <Typography variant="subtitle2">創建項目</Typography>
+            <Typography variant="subtitle2">Create</Typography>
             <Button startIcon={<AddIcon />} onClick={() => setCreateOpen(true)} disabled={!['department','semester','encouragement'].includes(active)}>
-              {active === 'department' ? '新建學系' : active === 'semester' ? '新建學期' : active === 'encouragement' ? '新增加油句' : '此模組不支援'}
+              {active === 'department' ? 'New department' : active === 'semester' ? 'New semester' : active === 'encouragement' ? 'New encouragement' : 'Not supported'}
             </Button>
           </Stack>
         </Box>
       </Drawer>
 
-      {/* 主區域 */}
+  {/* Main area */}
       <Box component="main" sx={{ flexGrow: 1, p: 2 }}>
         {!drawerOpen && (
           <IconButton onClick={() => setDrawerOpen(true)}><MenuIcon /></IconButton>
@@ -467,7 +467,7 @@ const Admin: React.FC = () => {
               <Typography variant="h6">{active.toUpperCase()}</Typography>
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ sm: 'center' }}>
                 <TextField size="small" placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} />
-                <Button variant="outlined" onClick={() => { setPage(1); loadData(); }}>搜尋</Button>
+                <Button variant="outlined" onClick={() => { setPage(1); loadData(); }}>Search</Button>
                 <FormControl size="small" sx={{ minWidth: 120 }}>
                   <InputLabel id="psize">Rows</InputLabel>
                   <Select labelId="psize" label="Rows" value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}>
@@ -499,42 +499,42 @@ const Admin: React.FC = () => {
         </Card>
       </Box>
 
-      {/* 建立對話框 */}
+  {/* Create dialog */}
       <Dialog open={createOpen} onClose={() => setCreateOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle>新建 {active}</DialogTitle>
+  <DialogTitle>New {active}</DialogTitle>
         <DialogContent>{renderCreateForm()}</DialogContent>
       </Dialog>
 
-      {/* 編輯對話框 */}
+  {/* Edit dialog */}
       <Dialog open={editOpen} onClose={() => setEditOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle>編輯 {active}</DialogTitle>
+  <DialogTitle>Edit {active}</DialogTitle>
         <DialogContent>{renderEditForm()}</DialogContent>
       </Dialog>
 
-      {/* 刪除對話框 */}
+  {/* Delete dialog */}
       <Dialog open={deleteOpen} onClose={() => setDeleteOpen(false)}>
-        <DialogTitle>確認刪除</DialogTitle>
+        <DialogTitle>Confirm delete</DialogTitle>
         <DialogContent>
-          此操作將執行邏輯刪除（或目前 schema 不支援時返回 501）。
+          This will perform a logical delete (or 501 if not supported by schema).
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteOpen(false)}>取消</Button>
-          <Button color="error" variant="contained" onClick={handleDeleteConfirm}>刪除</Button>
+          <Button onClick={() => setDeleteOpen(false)}>Cancel</Button>
+          <Button color="error" variant="contained" onClick={handleDeleteConfirm}>Delete</Button>
         </DialogActions>
       </Dialog>
 
-      {/* 封鎖/解封 對話框 */}
+  {/* Block/Unblock dialog */}
       <Dialog open={blockOpen} onClose={() => setBlockOpen(false)}>
-        <DialogTitle>封鎖/解封用戶</DialogTitle>
+        <DialogTitle>Block/Unblock user</DialogTitle>
         <DialogActions>
-          <Button onClick={() => setBlockOpen(false)}>取消</Button>
-          <Button variant="contained" onClick={handleBlockConfirm}>確認</Button>
+          <Button onClick={() => setBlockOpen(false)}>Cancel</Button>
+          <Button variant="contained" onClick={handleBlockConfirm}>Confirm</Button>
         </DialogActions>
       </Dialog>
 
-      {/* 用戶詳情 對話框 */}
+  {/* User details dialog */}
       <Dialog open={detailOpen} onClose={() => setDetailOpen(false)} fullWidth maxWidth="md">
-        <DialogTitle>用戶詳情</DialogTitle>
+  <DialogTitle>User details</DialogTitle>
         <DialogContent>
           {detailData ? (
             <Box>
