@@ -139,6 +139,18 @@ router.get('/search', authenticateToken, async (req, res) => {
     if (sort === 'reviews') orderBy = 'ORDER BY reviewCount DESC';
     else if (sort === 'rating') orderBy = 'ORDER BY avgTotal DESC';
 
+    // total count for pagination
+    const [[{ total }]] = await pool.query(
+      `SELECT COUNT(*) AS total FROM (
+         SELECT c.courseId
+         FROM Course c
+         LEFT JOIN CourseDescription cd ON c.courseId = cd.courseId
+         ${where}
+         GROUP BY c.courseId
+       ) t`,
+      query ? [like, like, like, like, like] : []
+    );
+
     const [rows] = await pool.query(
       `SELECT c.courseId, c.name, c.departmentId, cd.description,
               ROUND(AVG(r.contentRating), 2) AS avgContentRating,
@@ -157,7 +169,7 @@ router.get('/search', authenticateToken, async (req, res) => {
        LIMIT ? OFFSET ?`,
       query ? [like, like, like, like, like, limit, offset] : [limit, offset]
     );
-    res.json({ rows });
+    res.json({ rows, total, page: Math.floor(offset / limit) + 1, limit });
   } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to search courses' }); }
 });
 
