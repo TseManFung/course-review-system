@@ -122,8 +122,8 @@ const ReviewCreate: React.FC = () => {
         const first = sems[0]?.semesterId || '';
         setSelectedSemesterId(first);
         setValue('semesterId', first);
-      } catch (e) {
-        // 忽略錯誤，保持空清單
+      } catch {
+        // 忽略錯誤，保持空清單（允許手動輸入學期）
       }
     })();
     return () => {
@@ -232,25 +232,51 @@ const ReviewCreate: React.FC = () => {
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
               <TextField label="Course ID" value={courseId} fullWidth disabled />
 
-              <FormControl fullWidth>
-                <InputLabel id="semesterId-label">Semester</InputLabel>
-                <Select
-                  labelId="semesterId-label"
-                  label="Semester"
-                  value={selectedSemesterId}
-                  onChange={(e: SelectChangeEvent) => {
-                    const sid = e.target.value as string;
-                    setSelectedSemesterId(sid);
-                    setValue('semesterId', sid, { shouldValidate: true });
+              {semesters.length > 0 ? (
+                <FormControl fullWidth>
+                  <InputLabel id="semesterId-label">Semester</InputLabel>
+                  <Select
+                    labelId="semesterId-label"
+                    label="Semester"
+                    value={selectedSemesterId}
+                    onChange={(e: SelectChangeEvent) => {
+                      const sid = e.target.value as string;
+                      setSelectedSemesterId(sid);
+                      setValue('semesterId', sid, { shouldValidate: true });
+                    }}
+                  >
+                    {semesters.map((s) => (
+                      <MenuItem key={s.semesterId} value={s.semesterId}>
+                        {s.semesterId} — {s.semesterName}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              ) : (
+                <Controller
+                  name="semesterId"
+                  control={control}
+                  rules={{
+                    required: true,
+                    pattern: { value: /^[0-9]{4}sem[1-3]$/, message: '格式應為 YYYYsem1-3，如 2024sem1' },
                   }}
-                >
-                  {semesters.map((s) => (
-                    <MenuItem key={s.semesterId} value={s.semesterId}>
-                      {s.semesterId} — {s.semesterName}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Semester ID（手動輸入）"
+                      placeholder="例如：2024sem1"
+                      fullWidth
+                      onChange={(e) => {
+                        field.onChange(e);
+                        const sid = e.target.value;
+                        setSelectedSemesterId(sid);
+                      }}
+                      error={!!errors.semesterId}
+                      helperText={errors.semesterId?.message as string}
+                    />
+                  )}
+                />
+              )}
             </Stack>
 
             {/* 教師搜尋與選擇（僅 UI） */}

@@ -5,6 +5,29 @@ const { generateSnowflakeId } = require('./utils');
 
 const router = express.Router();
 
+// Admin list encouragements with pagination and optional search
+router.get('/', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 30, 1), 100);
+    const offset = (page - 1) * limit;
+    const search = (req.query.search || '').toString().trim();
+    const like = `%${search}%`;
+    const where = search ? "WHERE status = 'C' AND content LIKE ?" : "WHERE status = 'C'";
+    const params = search ? [like] : [];
+
+    const [[{ total }]] = await pool.query(`SELECT COUNT(*) AS total FROM Encouragement ${where}`, params);
+    const [rows] = await pool.query(
+      `SELECT encouragementId, content, status FROM Encouragement ${where} ORDER BY encouragementId DESC LIMIT ? OFFSET ?`,
+      [...params, limit, offset]
+    );
+    res.json({ total, rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch encouragement list' });
+  }
+});
+
 // GET /encouragement/random
 router.get('/random', async (req, res) => {
   try {
