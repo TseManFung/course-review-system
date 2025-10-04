@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useEffect, useState } from 'react';
+import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
 import type { PaletteMode } from '@mui/material';
 import { buildTheme } from '../theme';
@@ -63,7 +64,10 @@ export const ThemeModeProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   return (
     <Ctx.Provider value={value}>
-      <ThemeProvider theme={theme}>{children}</ThemeProvider>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        {children}
+      </ThemeProvider>
     </Ctx.Provider>
   );
 };

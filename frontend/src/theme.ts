@@ -20,6 +20,20 @@ export const buildTheme = (mode: PaletteMode) =>
     },
     shape: { borderRadius: 8 },
     components: {
+      MuiCssBaseline: {
+        styleOverrides: (theme: any) => ({
+          'html, body, #root': {
+            backgroundColor: theme.palette.background.default,
+            color: theme.palette.text.primary,
+            minHeight: '100%',
+            transition: 'background-color .25s ease, color .25s ease'
+          },
+          body: {
+            margin: 0,
+            WebkitFontSmoothing: 'antialiased'
+          }
+        })
+      },
       MuiAppBar: {
         styleOverrides: {
           root: {
