@@ -28,6 +28,74 @@ router.get('/', authenticateToken, async (req, res) => {
   } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to fetch courses' }); }
 });
 
+// IMPORTANT: place fixed sub-routes like /search and /check BEFORE any dynamic :courseId route
+// GET /course/search?query=&page=&limit=&sort=
+router.get('/search', authenticateToken, async (req, res) => {
+  try {
+    const { offset, limit } = buildPagination(req);
+    const query = (req.query.query || '').trim();
+    const sort = (req.query.sort || 'latest').toLowerCase();
+    const like = `%${query}%`;
+
+    const where = query
+      ? `WHERE c.status = 'C' AND (
+           c.courseId LIKE ? OR c.name LIKE ? OR EXISTS (
+             SELECT 1 FROM CourseOfferingInstructor coi
+             JOIN Instructor i ON coi.instructorId = i.instructorId
+             WHERE coi.courseId = c.courseId AND i.status = 'C' AND (
+               i.firstName LIKE ? OR i.lastName LIKE ? OR i.email LIKE ?
+             )
+           )
+         )`
+      : `WHERE c.status = 'C'`;
+
+    let orderBy = 'ORDER BY latestReview DESC';
+    if (sort === 'reviews') orderBy = 'ORDER BY reviewCount DESC';
+    else if (sort === 'rating') orderBy = 'ORDER BY avgTotal DESC';
+
+    const [[{ total }]] = await pool.query(
+      `SELECT COUNT(*) AS total FROM (
+         SELECT c.courseId
+         FROM Course c
+         LEFT JOIN CourseDescription cd ON c.courseId = cd.courseId
+         ${where}
+         GROUP BY c.courseId
+       ) t`,
+      query ? [like, like, like, like, like] : []
+    );
+
+    const [rows] = await pool.query(
+      `SELECT c.courseId, c.name, c.departmentId, cd.description,
+        ROUND(IFNULL(AVG(r.contentRating), 0), 2) AS avgContentRating,
+        ROUND(IFNULL(AVG(r.teachingRating), 0), 2) AS avgTeachingRating,
+        ROUND(IFNULL(AVG(r.gradingRating), 0), 2) AS avgGradingRating,
+        ROUND(IFNULL(AVG(r.workloadRating), 0), 2) AS avgWorkloadRating,
+        ROUND((IFNULL(AVG(r.contentRating),0) + IFNULL(AVG(r.teachingRating),0) + IFNULL(AVG(r.gradingRating),0) + IFNULL(AVG(r.workloadRating),0)) / 4, 2) AS avgTotal,
+        COUNT(r.reviewId) AS reviewCount,
+        MAX(r.createdAt) AS latestReview
+       FROM Course c
+       LEFT JOIN CourseDescription cd ON c.courseId = cd.courseId
+       LEFT JOIN Review r ON c.courseId = r.courseId AND r.status = 'C'
+       ${where}
+       GROUP BY c.courseId
+       ${orderBy}
+       LIMIT ? OFFSET ?`,
+      query ? [like, like, like, like, like, limit, offset] : [limit, offset]
+    );
+    res.json({ rows, total, page: Math.floor(offset / limit) + 1, limit });
+  } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to search courses' }); }
+});
+
+// GET /course/check?courseId= - check existence
+router.get('/check', authenticateToken, async (req, res) => {
+  try {
+    const { courseId } = req.query;
+    if (!courseId) return res.status(400).json({ error: 'courseId required' });
+    const [[row]] = await pool.query('SELECT 1 AS ok FROM Course WHERE courseId = ? LIMIT 1', [courseId]);
+    res.json({ exists: !!row });
+  } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to check course' }); }
+});
+
 // GET /course/:courseId - course details: base info, offerings, and review stats
 router.get('/:courseId', authenticateToken, async (req, res) => {
   try {
@@ -114,74 +182,6 @@ router.post('/:courseId/instructor', authenticateToken, requireAdmin, async (req
   } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to link instructor' }); }
 });
 
-// GET /course/search?query=&page=&limit=&sort=
-router.get('/search', authenticateToken, async (req, res) => {
-  try {
-    const { offset, limit } = buildPagination(req);
-    const query = (req.query.query || '').trim();
-    const sort = (req.query.sort || 'latest').toLowerCase();
-    const like = `%${query}%`;
-
-    // Build where clause to match courses or instructors
-    const where = query
-      ? `WHERE c.status = 'C' AND (
-           c.courseId LIKE ? OR c.name LIKE ? OR EXISTS (
-             SELECT 1 FROM CourseOfferingInstructor coi
-             JOIN Instructor i ON coi.instructorId = i.instructorId
-             WHERE coi.courseId = c.courseId AND i.status = 'C' AND (
-               i.firstName LIKE ? OR i.lastName LIKE ? OR i.email LIKE ?
-             )
-           )
-         )`
-      : `WHERE c.status = 'C'`;
-
-    let orderBy = 'ORDER BY latestReview DESC';
-    if (sort === 'reviews') orderBy = 'ORDER BY reviewCount DESC';
-    else if (sort === 'rating') orderBy = 'ORDER BY avgTotal DESC';
-
-    // total count for pagination
-    const [[{ total }]] = await pool.query(
-      `SELECT COUNT(*) AS total FROM (
-         SELECT c.courseId
-         FROM Course c
-         LEFT JOIN CourseDescription cd ON c.courseId = cd.courseId
-         ${where}
-         GROUP BY c.courseId
-       ) t`,
-      query ? [like, like, like, like, like] : []
-    );
-
-    const [rows] = await pool.query(
-      `SELECT c.courseId, c.name, c.departmentId, cd.description,
-              ROUND(AVG(r.contentRating), 2) AS avgContentRating,
-              ROUND(AVG(r.teachingRating), 2) AS avgTeachingRating,
-              ROUND(AVG(r.gradingRating), 2) AS avgGradingRating,
-              ROUND(AVG(r.workloadRating), 2) AS avgWorkloadRating,
-              ROUND( (IFNULL(AVG(r.contentRating),0) + IFNULL(AVG(r.teachingRating),0) + IFNULL(AVG(r.gradingRating),0) + IFNULL(AVG(r.workloadRating),0)) / 4, 2) AS avgTotal,
-              COUNT(r.reviewId) AS reviewCount,
-              MAX(r.createdAt) AS latestReview
-       FROM Course c
-       LEFT JOIN CourseDescription cd ON c.courseId = cd.courseId
-       LEFT JOIN Review r ON c.courseId = r.courseId AND r.status = 'C'
-       ${where}
-       GROUP BY c.courseId
-       ${orderBy}
-       LIMIT ? OFFSET ?`,
-      query ? [like, like, like, like, like, limit, offset] : [limit, offset]
-    );
-    res.json({ rows, total, page: Math.floor(offset / limit) + 1, limit });
-  } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to search courses' }); }
-});
-
-// GET /course/check?courseId= - check existence
-router.get('/check', authenticateToken, async (req, res) => {
-  try {
-    const { courseId } = req.query;
-    if (!courseId) return res.status(400).json({ error: 'courseId required' });
-    const [[row]] = await pool.query('SELECT 1 AS ok FROM Course WHERE courseId = ? LIMIT 1', [courseId]);
-    res.json({ exists: !!row });
-  } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to check course' }); }
-});
 
 router.post('/', authenticateToken, requireAdmin, async (req, res) => {
   try {

@@ -85,7 +85,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     backgroundColor: resolvedMode === 'dark' ? '#000' : '#fff',
-                    color: resolvedMode === 'dark' ? '#fff' : 'inherit',
+                    color: resolvedMode === 'dark' ? '#fff' : undefined,
                   },
                   '& .MuiOutlinedInput-notchedOutline': {
                     borderColor: resolvedMode === 'dark' ? 'rgba(255,255,255,0.3)' : undefined,
@@ -157,6 +157,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     onClick={() => {
                       logout();
                       setAnchorEl(null);
+                      navigate('/');
                     }}
                   >
                     Logout

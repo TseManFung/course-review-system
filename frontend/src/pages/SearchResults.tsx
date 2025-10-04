@@ -28,7 +28,8 @@ const SearchResults: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const query = qs.get('q') || qs.get('query') || '';
+  const queryRaw = qs.get('q') || qs.get('query') || '';
+  const query = queryRaw.trim();
   const page = Number(qs.get('page') || '1');
   const limit = Number(qs.get('limit') || '10');
   const sort = qs.get('sort') || 'latest';
@@ -36,6 +37,11 @@ const SearchResults: React.FC = () => {
   useEffect(() => {
     const controller = new AbortController();
     const load = async () => {
+      if (!query) { // 空字串時不要打 API，顯示提示
+        setRows([]);
+        setTotal(0);
+        return;
+      }
       setLoading(true);
       setError(null);
       try {
@@ -100,8 +106,12 @@ const SearchResults: React.FC = () => {
 
       {!loading && rows.length === 0 && (
         <Box textAlign="center" sx={{ py: 6 }}>
-          <Typography sx={{ mb: 2 }}>No results found</Typography>
-          <Button variant="contained" component={Link} to="/course/create">Create a course</Button>
+          <Typography sx={{ mb: 2 }}>
+            {query ? 'No results found' : '請輸入關鍵字開始搜尋'}
+          </Typography>
+          {query && (
+            <Button variant="contained" component={Link} to="/course/create">Create a course</Button>
+          )}
         </Box>
       )}
 

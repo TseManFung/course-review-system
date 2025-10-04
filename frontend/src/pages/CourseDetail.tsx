@@ -236,10 +236,10 @@ const CourseDetail: React.FC = () => {
                             {semesterNameById.get(String(rv.semesterId)) || `Semester ${rv.semesterId}`}
                           </Typography>
                           <Stack direction="row" spacing={1}>
-                            <RatingComponent label="content" value={rv.contentRating} />
-                            <RatingComponent label="teaching" value={rv.teachingRating} />
-                            <RatingComponent label="grading" value={rv.gradingRating} />
-                            <RatingComponent label="workload" value={rv.workloadRating} />
+                            <RatingComponent label="content" value={rv.contentRating} numFix={0} />
+                            <RatingComponent label="teaching" value={rv.teachingRating} numFix={0} />
+                            <RatingComponent label="grading" value={rv.gradingRating} numFix={0} />
+                            <RatingComponent label="workload" value={rv.workloadRating} numFix={0} />
                           </Stack>
                         </Stack>
                         {rv.comment && (

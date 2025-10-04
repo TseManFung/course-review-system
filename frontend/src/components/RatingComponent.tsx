@@ -16,13 +16,24 @@ const labelMap: Record<string, string> = {
 
 export interface RatingProps {
   label: 'content' | 'teaching' | 'grading' | 'workload';
-  value?: number | null;
+  value?: number | string | null;
+  numFix?: number;
 }
 
-const RatingComponent: React.FC<RatingProps> = ({ label, value }) => {
-  const v = typeof value === 'number' ? value : undefined;
-  const display = v != null ? v.toFixed(2) : '—';
-  const bg = bgFor(v);
+const RatingComponent: React.FC<RatingProps> = ({ label, value, numFix = 2 }) => {
+  // 後端平均可能是 number 或 string，或為 0 / null
+  let num: number | undefined;
+  if (value === 0 || value === '0') {
+    num = 0;
+  } else if (typeof value === 'number' && !Number.isNaN(value)) {
+    num = value;
+  } else if (typeof value === 'string' && value.trim() !== '') {
+    const parsed = Number(value);
+    if (!Number.isNaN(parsed)) num = parsed;
+  }
+  const hasValue = typeof num === 'number';
+  const display = hasValue ? num!.toFixed(numFix) : '—';
+  const bg = bgFor(num);
   const text = labelMap[label] || label;
   return (
     <Tooltip title={text} arrow>

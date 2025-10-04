@@ -44,6 +44,8 @@ type PagedResp<T> = { total: number; rows: T[] };
 
 const PAGE_SIZES = [30, 50, 80, 100] as const;
 
+const DRAWER_WIDTH = 260;
+
 const Admin: React.FC = () => {
   const { user } = useAuth();
 
@@ -86,10 +88,12 @@ const Admin: React.FC = () => {
             headerName: 'Actions',
             sortable: false,
             renderCell: (params) => (
-              <Stack direction="row" spacing={1}>
-                <IconButton size="small" onClick={() => { setCurrentRow(params.row); setEditOpen(true); }}><EditIcon fontSize="small" /></IconButton>
-                <IconButton size="small" color="error" onClick={() => { setCurrentRow(params.row); setDeleteOpen(true); }}><DeleteIcon fontSize="small" /></IconButton>
-              </Stack>
+              <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+                <Stack direction="row" spacing={1}>
+                  <IconButton size="small" onClick={() => { setCurrentRow(params.row); setEditOpen(true); }}><EditIcon fontSize="small" /></IconButton>
+                  <IconButton size="small" color="error" onClick={() => { setCurrentRow(params.row); setDeleteOpen(true); }}><DeleteIcon fontSize="small" /></IconButton>
+                </Stack>
+              </Box>
             ),
           },
         ];
@@ -100,10 +104,12 @@ const Admin: React.FC = () => {
           {
             field: 'actions', headerName: 'Actions', sortable: false,
             renderCell: (p) => (
-              <Stack direction="row" spacing={1}>
-                <IconButton size="small" onClick={() => { setCurrentRow(p.row); setEditOpen(true); }}><EditIcon fontSize="small" /></IconButton>
-                <IconButton size="small" color="error" onClick={() => { setCurrentRow(p.row); setDeleteOpen(true); }}><DeleteIcon fontSize="small" /></IconButton>
-              </Stack>
+              <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+                <Stack direction="row" spacing={1}>
+                  <IconButton size="small" onClick={() => { setCurrentRow(p.row); setEditOpen(true); }}><EditIcon fontSize="small" /></IconButton>
+                  <IconButton size="small" color="error" onClick={() => { setCurrentRow(p.row); setDeleteOpen(true); }}><DeleteIcon fontSize="small" /></IconButton>
+                </Stack>
+              </Box>
             )
           }
         ];
@@ -117,10 +123,12 @@ const Admin: React.FC = () => {
           {
             field: 'actions', headerName: 'Actions', sortable: false,
             renderCell: (p) => (
-              <Stack direction="row" spacing={1}>
-                <IconButton size="small" onClick={() => { setCurrentRow(p.row); setEditOpen(true); }}><EditIcon fontSize="small" /></IconButton>
-                <IconButton size="small" color="error" onClick={() => { setCurrentRow(p.row); setDeleteOpen(true); }}><DeleteIcon fontSize="small" /></IconButton>
-              </Stack>
+              <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+                <Stack direction="row" spacing={1}>
+                  <IconButton size="small" onClick={() => { setCurrentRow(p.row); setEditOpen(true); }}><EditIcon fontSize="small" /></IconButton>
+                  <IconButton size="small" color="error" onClick={() => { setCurrentRow(p.row); setDeleteOpen(true); }}><DeleteIcon fontSize="small" /></IconButton>
+                </Stack>
+              </Box>
             )
           }
         ];
@@ -139,9 +147,11 @@ const Admin: React.FC = () => {
           {
             field: 'actions', headerName: 'Actions', sortable: false,
             renderCell: (p) => (
-              <Stack direction="row" spacing={1}>
-                <IconButton size="small" color="error" onClick={() => { setCurrentRow(p.row); setDeleteOpen(true); }}><DeleteIcon fontSize="small" /></IconButton>
-              </Stack>
+              <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+                <Stack direction="row" spacing={1}>
+                  <IconButton size="small" color="error" onClick={() => { setCurrentRow(p.row); setDeleteOpen(true); }}><DeleteIcon fontSize="small" /></IconButton>
+                </Stack>
+              </Box>
             )
           }
         ];
@@ -155,10 +165,12 @@ const Admin: React.FC = () => {
           {
             field: 'actions', headerName: 'Actions', sortable: false,
             renderCell: (p) => (
-              <Stack direction="row" spacing={1}>
-                <IconButton size="small" onClick={() => { setCurrentRow(p.row); setEditOpen(true); }}><EditIcon fontSize="small" /></IconButton>
-                <IconButton size="small" color="error" onClick={() => { setCurrentRow(p.row); setDeleteOpen(true); }}><DeleteIcon fontSize="small" /></IconButton>
-              </Stack>
+              <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+                <Stack direction="row" spacing={1}>
+                  <IconButton size="small" onClick={() => { setCurrentRow(p.row); setEditOpen(true); }}><EditIcon fontSize="small" /></IconButton>
+                  <IconButton size="small" color="error" onClick={() => { setCurrentRow(p.row); setDeleteOpen(true); }}><DeleteIcon fontSize="small" /></IconButton>
+                </Stack>
+              </Box>
             )
           }
         ];
@@ -169,10 +181,12 @@ const Admin: React.FC = () => {
           {
             field: 'actions', headerName: 'Actions', sortable: false,
             renderCell: (p) => (
-              <Stack direction="row" spacing={1}>
-                <IconButton size="small" onClick={() => { setCurrentRow(p.row); setEditOpen(true); }}><EditIcon fontSize="small" /></IconButton>
-                <IconButton size="small" color="error" onClick={() => { setCurrentRow(p.row); setDeleteOpen(true); }}><DeleteIcon fontSize="small" /></IconButton>
-              </Stack>
+              <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+                <Stack direction="row" spacing={1}>
+                  <IconButton size="small" onClick={() => { setCurrentRow(p.row); setEditOpen(true); }}><EditIcon fontSize="small" /></IconButton>
+                  <IconButton size="small" color="error" onClick={() => { setCurrentRow(p.row); setDeleteOpen(true); }}><DeleteIcon fontSize="small" /></IconButton>
+                </Stack>
+              </Box>
             )
           }
         ];
@@ -189,10 +203,12 @@ const Admin: React.FC = () => {
           {
             field: 'actions', headerName: 'Actions', sortable: false,
             renderCell: (p) => (
-              <Stack direction="row" spacing={1}>
-                <IconButton size="small" onClick={() => { setCurrentRow(p.row); setBlockOpen(true); }}><BlockIcon fontSize="small" /></IconButton>
-                <Button size="small" onClick={() => handleUserDetail(p.row)}>Detail</Button>
-              </Stack>
+              <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+                <Stack direction="row" spacing={1}>
+                  <IconButton size="small" onClick={() => { setCurrentRow(p.row); setBlockOpen(true); }}><BlockIcon fontSize="small" /></IconButton>
+                  <Button size="small" onClick={() => handleUserDetail(p.row)}>Detail</Button>
+                </Stack>
+              </Box>
             )
           }
         ];
@@ -218,7 +234,19 @@ const Admin: React.FC = () => {
       }
       const { data } = await api.get<PagedResp<any>>(url, { params });
       setTotal(data.total);
-      setRows((data.rows || []).map((r: any, idx: number) => ({ id: r.id ?? r.reviewId ?? r.courseId ?? r.semesterId ?? r.departmentId ?? r.instructorId ?? r.encouragementId ?? r.userId ?? idx, ...r })));
+      setRows((data.rows || []).map((r: any, idx: number) => ({
+        id:
+          r.id
+          ?? r.reviewId
+          ?? r.courseId
+          ?? r.semesterId
+          ?? r.instructorId
+          ?? r.departmentId
+          ?? r.encouragementId
+          ?? r.userId
+          ?? idx,
+        ...r
+      })));
     } finally { setLoading(false); }
   };
 
@@ -424,9 +452,33 @@ const Admin: React.FC = () => {
   };
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    // Full-bleed layout: escape potential parent Container max-width 只改這裡，不動外層 Container
+    <Box
+      sx={{
+        display: 'flex',
+        position: 'relative',
+        left: '50%',
+        right: '50%',
+        marginLeft: '-50vw',
+        marginRight: '-50vw',
+        width: '100vw',
+        maxWidth: '100vw',
+        overflowX: 'hidden'
+      }}
+    >
   {/* Sidebar */}
-      <Drawer variant="persistent" open={drawerOpen}>
+      <Drawer
+        variant="persistent"
+        open={drawerOpen}
+        sx={{
+          '& .MuiDrawer-paper': {
+            top: { xs: 56, sm: 64 }, // offset AppBar height
+            height: { xs: 'calc(100vh - 56px)', sm: 'calc(100vh - 64px)' },
+            width: DRAWER_WIDTH,
+            boxSizing: 'border-box'
+          }
+        }}
+      >
         <Toolbar sx={{ minWidth: 260 }}>
           <Stack direction="row" alignItems="center" justifyContent="space-between" width="100%">
             <Typography variant="h6">Admin</Typography>
@@ -455,11 +507,39 @@ const Admin: React.FC = () => {
         </Box>
       </Drawer>
 
-  {/* Main area */}
-      <Box component="main" sx={{ flexGrow: 1, p: 2 }}>
         {!drawerOpen && (
-          <IconButton onClick={() => setDrawerOpen(true)}><MenuIcon /></IconButton>
+          <IconButton
+            onClick={() => setDrawerOpen(true)}
+            aria-label="open navigation"
+            sx={{
+              position: 'fixed',
+              top: { xs: 'calc(56px + 8px)', sm: 'calc(64px + 8px)' }, // below AppBar
+              left: 8,
+              zIndex: (theme) => theme.zIndex.appBar + 1,
+              bgcolor: 'background.paper',
+              boxShadow: 1,
+              '&:hover': { bgcolor: 'action.hover' },
+              transition: 'background-color .25s ease'
+            }}
+          >
+            <MenuIcon />
+          </IconButton>
         )}
+
+  {/* Main area */}
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 2,
+          ml: drawerOpen ? `${DRAWER_WIDTH}px` : 0,
+          width: drawerOpen ? `calc(100vw - ${DRAWER_WIDTH}px)` : '100vw',
+          transition: (theme) => theme.transitions.create(['margin', 'width'], {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.shorter
+          }),
+        }}
+      >
 
         <Card>
           <CardContent>

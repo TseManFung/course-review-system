@@ -31,6 +31,16 @@ export const buildTheme = (mode: PaletteMode) =>
           body: {
             margin: 0,
             WebkitFontSmoothing: 'antialiased'
+          },
+          '*::-webkit-scrollbar': {
+            width: 10
+          },
+            '*::-webkit-scrollbar-track': {
+            background: theme.palette.background.default
+          },
+          '*::-webkit-scrollbar-thumb': {
+            background: theme.palette.mode === 'dark' ? '#444' : '#ccc',
+            borderRadius: 8
           }
         })
       },

@@ -67,8 +67,8 @@ router.get('/', authenticateToken, requireAdmin, async (req, res) => {
     const search = (req.query.search || '').trim();
     const like = `%${search}%`;
     const where = search
-      ? 'WHERE accessLevel >= 0 AND (userId LIKE ? OR email LIKE ? OR firstName LIKE ? OR lastName LIKE ? )'
-      : 'WHERE accessLevel >= 0';
+      ? 'WHERE (userId LIKE ? OR email LIKE ? OR firstName LIKE ? OR lastName LIKE ? )'
+      : '';
     const params = search ? [like, like, like, like] : [];
 
     const [[{ total }]] = await pool.query(`SELECT COUNT(*) AS total FROM \`User\` ${where}`, params);
