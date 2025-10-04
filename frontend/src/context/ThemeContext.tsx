@@ -1,8 +1,7 @@
-import { createContext, useCallback, useContext, useMemo, useEffect } from 'react';
-import { CssBaseline } from '@mui/material';
-import { CssVarsProvider, useColorScheme } from '@mui/material/styles';
+import { createContext, useCallback, useContext, useMemo, useEffect, useState } from 'react';
+import { ThemeProvider } from '@mui/material/styles';
 import type { PaletteMode } from '@mui/material';
-import appTheme from '../theme';
+import { buildTheme } from '../theme';
 
 interface ThemeCtx {
   // current selected mode: 'light' | 'dark' | 'system'
@@ -21,48 +20,50 @@ export const useThemeMode = () => {
   return ctx;
 };
 
-const STORAGE_KEY = 'theme-mode';
+const STORAGE_KEY = 'theme-mode'; // 'light' | 'dark' | 'system'
 
-// Inner provider to access useColorScheme (must be inside CssVarsProvider)
-const Inner: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { mode, setMode, systemMode } = useColorScheme();
+export const ThemeModeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const prefersDark = typeof window !== 'undefined' ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+  const readInitial = (): string => {
+    if (typeof window === 'undefined') return 'light';
+    const saved = localStorage.getItem(STORAGE_KEY) as 'light' | 'dark' | 'system' | null;
+    return saved || 'system';
+  };
 
-  // MUI 指南：初始 render 可能為 undefined，直接 return null 避免 hydration mismatch / 閃爍
-  if (!mode) return null;
+  const [mode, setMode] = useState<string>(readInitial);
+  const resolvedMode: PaletteMode = (mode === 'system'
+    ? (prefersDark?.matches ? 'dark' : 'light')
+    : (mode as PaletteMode)) || 'light';
 
-  const resolvedMode: PaletteMode = (mode === 'system' ? (systemMode as PaletteMode | undefined) : mode) as PaletteMode || 'light';
+  // persist
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, mode);
+  }, [mode]);
+
+  // listen system change when in system mode
+  useEffect(() => {
+    if (!prefersDark) return;
+    const listener = () => {
+      if (mode === 'system') {
+        // force re-evaluate by updating state (same value OK)
+        setMode(prev => prev);
+      }
+    };
+    prefersDark.addEventListener('change', listener);
+    return () => prefersDark.removeEventListener('change', listener);
+  }, [mode, prefersDark]);
 
   const toggle = useCallback(() => {
-    // 不在 system 時做單純 light/dark 切換；在 system 時先切到 light
-    if (mode === 'system') setMode('light');
-    else setMode(mode === 'light' ? 'dark' : 'light');
-  }, [mode, setMode]);
+    setMode(curr => (curr === 'system' ? 'light' : curr === 'light' ? 'dark' : 'light'));
+  }, []);
 
-  // Fallback：若 CssVarsProvider 沒有自動加上屬性，手動同步 <html data-mui-color-scheme>
-  useEffect(() => {
-    const attr = document.documentElement.getAttribute('data-mui-color-scheme');
-    if (attr !== resolvedMode) {
-      document.documentElement.setAttribute('data-mui-color-scheme', resolvedMode);
-    }
-  }, [resolvedMode]);
+  const theme = useMemo(() => buildTheme(resolvedMode), [resolvedMode]);
 
-  const value = useMemo<ThemeCtx>(() => ({ mode, resolvedMode, toggle, setMode }), [mode, resolvedMode, toggle, setMode]);
+  const value = useMemo<ThemeCtx>(() => ({ mode, resolvedMode, toggle, setMode: setMode as any }), [mode, resolvedMode, toggle]);
 
   return (
     <Ctx.Provider value={value}>
-      <CssBaseline />
-      {children}
+      <ThemeProvider theme={theme}>{children}</ThemeProvider>
     </Ctx.Provider>
   );
 };
-
-export const ThemeModeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <CssVarsProvider
-    theme={appTheme}
-    defaultMode="system"
-    modeStorageKey={STORAGE_KEY}
-    disableTransitionOnChange
-  >
-    <Inner>{children}</Inner>
-  </CssVarsProvider>
-);

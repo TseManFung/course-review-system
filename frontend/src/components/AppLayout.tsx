@@ -62,19 +62,17 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   width: { xs: "60%", sm: 420 },
                   maxWidth: "50vw",
                   display: { xs: "none", sm: "block" },
-                  bgcolor: "#fff",
+                  bgcolor: resolvedMode === 'dark' ? '#000' : '#fff',
                   borderRadius: 2,
-                  boxShadow: "0 2px 6px rgba(0,0,0,0.18)",
+                  boxShadow:
+                    resolvedMode === 'dark'
+                      ? '0 0 0 1px rgba(255,255,255,0.15)'
+                      : '0 2px 6px rgba(0,0,0,0.18)',
                   px: 1,
                   py: 0.5,
                   transition:
-                    "background-color 0.25s ease, box-shadow 0.25s ease",
+                    'background-color 0.25s ease, box-shadow 0.25s ease',
                 },
-                (theme) =>
-                  theme.applyStyles("dark", {
-                    bgcolor: "#000",
-                    boxShadow: "0 0 0 1px rgba(255,255,255,0.15)",
-                  }),
               ]}
             >
               <TextField
@@ -84,26 +82,22 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 variant="outlined"
-                sx={[
-                  (theme) =>
-                    theme.applyStyles("dark", {
-                      "& .MuiOutlinedInput-root": {
-                        backgroundColor: "#000",
-                        color: "#fff",
-                      },
-                      "& .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "rgba(255,255,255,0.3)",
-                      },
-                      "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline":
-                        {
-                          borderColor: "#fff",
-                        },
-                      "& .MuiSvgIcon-root": { color: "#fff" },
-                      "& input::placeholder": {
-                        color: "rgba(255,255,255,0.6)",
-                      },
-                    }),
-                ]}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: resolvedMode === 'dark' ? '#000' : '#fff',
+                    color: resolvedMode === 'dark' ? '#fff' : 'inherit',
+                  },
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: resolvedMode === 'dark' ? 'rgba(255,255,255,0.3)' : undefined,
+                  },
+                  '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: resolvedMode === 'dark' ? '#fff' : undefined,
+                  },
+                  '& .MuiSvgIcon-root': { color: resolvedMode === 'dark' ? '#fff' : 'inherit' },
+                  '& input::placeholder': {
+                    color: resolvedMode === 'dark' ? 'rgba(255,255,255,0.6)' : undefined,
+                  },
+                }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
