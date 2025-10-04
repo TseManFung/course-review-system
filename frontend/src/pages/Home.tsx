@@ -126,7 +126,7 @@ const Home: React.FC = () => {
       {error && <Alert severity="error">{error}</Alert>}
       <Divider />
       {mode === 'login' ? (
-        <Box component="form" onSubmit={loginForm.handleSubmit(onSubmitLogin)} sx={{ maxWidth: 420 }}>
+        <Box component="form" onSubmit={loginForm.handleSubmit(onSubmitLogin)} >
           <Stack spacing={2}>
             <TextField label="User ID" fullWidth {...loginForm.register('userId', { required: 'Required' })} error={!!loginForm.formState.errors.userId} helperText={loginForm.formState.errors.userId?.message} />
             <TextField label="Password" type="password" fullWidth {...loginForm.register('password', { required: 'Required' })} error={!!loginForm.formState.errors.password} helperText={loginForm.formState.errors.password?.message} />
@@ -134,7 +134,7 @@ const Home: React.FC = () => {
           </Stack>
         </Box>
       ) : (
-        <Box component="form" onSubmit={registerForm.handleSubmit(onSubmitRegister)} sx={{ maxWidth: 560 }}>
+        <Box component="form" onSubmit={registerForm.handleSubmit(onSubmitRegister)} >
           <Stack spacing={2}>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
               <TextField label="Email" type="email" fullWidth {...registerForm.register('email', { required: 'Required' })} error={!!registerForm.formState.errors.email} helperText={registerForm.formState.errors.email?.message} />
