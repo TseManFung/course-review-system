@@ -107,10 +107,6 @@ const CourseCreate: React.FC = () => {
 
   const canSubmit = formState.isValid;
 
-  if (!user || Number(user.accessLevel) !== 0) {
-    return <Alert severity="warning">Admin only</Alert>;
-  }
-
   return (
     <Stack spacing={3}>
       <Typography variant="h5">Create course</Typography>
@@ -159,8 +155,8 @@ const CourseCreate: React.FC = () => {
           <TextField
             label="credits"
             type="number"
-            inputProps={{ min: 0, max: 6 }}
-            {...register('credits', { required: 'Required', min: { value: 0, message: 'Min 0' }, max: { value: 6, message: 'Max 6' }, valueAsNumber: true })}
+            inputProps={{ min: 0, max: 120 }}
+            {...register('credits', { required: 'Required', min: { value: 0, message: 'Min 0' }, max: { value: 120, message: 'Max 120' }, valueAsNumber: true })}
             error={!!formState.errors.credits}
             helperText={formState.errors.credits?.message}
           />

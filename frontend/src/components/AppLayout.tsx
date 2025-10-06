@@ -19,7 +19,7 @@ import Brightness7Icon from "@mui/icons-material/Brightness7";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useThemeMode } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { resolvedMode, toggle } = useThemeMode();
@@ -29,6 +29,15 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const open = useMemo(() => Boolean(anchorEl), [anchorEl]);
+
+  // 當使用者從其他地方導向 /search?q=... 或 /search?query=... 時，把 URL 參數同步到 header 的輸入框
+  useEffect(() => {
+    if (location.pathname.startsWith('/search')) {
+      const sp = new URLSearchParams(location.search);
+      const urlQ = sp.get('q') || sp.get('query') || '';
+      setQuery(urlQ);
+    }
+  }, [location.pathname, location.search]);
 
   const onSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,13 +145,19 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     Profile
                   </MenuItem>
                   {Number(user.accessLevel) === 10000 && (
-                    <MenuItem
+                    <><MenuItem
                       component={Link}
                       to="/profile#reviews"
                       onClick={() => setAnchorEl(null)}
                     >
                       My reviews
-                    </MenuItem>
+                    </MenuItem><MenuItem
+                      component={Link}
+                      to="/course/create"
+                      onClick={() => setAnchorEl(null)}
+                    >
+                        Create a course
+                      </MenuItem></>
                   )}
                   {Number(user.accessLevel) === 0 && (
                     <MenuItem

@@ -27,6 +27,10 @@ router.post('/login', async (req, res) => {
       return res.status(403).json({ error: 'Account is blocked' });
     }
 
+    if(Number(user.accessLevel) === 10001) {
+      return res.status(403).json({ error: 'Account not verified' });
+    }
+
     const match = await bcrypt.compare(password, user.password);
     if (!match) {
       await pool.query('UPDATE `User` SET loginFail = loginFail + 1 WHERE userId = ?', [userId]);
@@ -72,13 +76,17 @@ router.post('/register', async (req, res) => {
     if (!PASSWORD_REGEX.test(password)) {
       return res.status(400).json({ error: 'Password does not meet complexity requirements' });
     }
+    const [userId, domain] = email.split('@');
+    if (domain !== 'connect.polyu.hk' && domain !== 'polyu.edu.hk') {
+      return res.status(400).json({ error: 'Email must be from specific domain' });
+    }
 
     const saltRounds = 12;
     const hashed = await bcrypt.hash(password, saltRounds);
 
     await pool.query(
       'INSERT INTO `User` (userId, email, password, accessLevel, firstName, lastName, loginFail, createdAt, updatedAt) VALUES (?, ?, ?, 10001, ?, ?, 0, NOW(), NOW())',
-      [email.split('@')[0], email, hashed, firstName, lastName]
+      [userId, email, hashed, firstName, lastName]
     );
 
     res.status(201).json({ message: 'Registered. Please verify email via /api/auth/verify?userId=...' });
@@ -92,6 +100,7 @@ router.post('/register', async (req, res) => {
 });
 
 // GET /auth/verify
+// http://localhost:54320/api/auth/verify?userId=test
 router.get('/verify', async (req, res) => {
   try {
     const { userId } = req.query;

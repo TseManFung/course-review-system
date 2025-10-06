@@ -87,15 +87,11 @@ router.get('/', authenticateToken, requireAdmin, async (req, res) => {
 router.patch('/:userId/block', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { userId } = req.params;
-    const { block, restoreLevel } = req.body || {};
+    const { block } = req.body || {};
     if (typeof block !== 'boolean') return res.status(400).json({ error: 'block boolean required' });
-    let targetLevel = -10000;
-    if (!block) {
-      const lvl = Number(restoreLevel);
-      targetLevel = Number.isFinite(lvl) ? lvl : 10000;
-    }
-    await pool.query('UPDATE `User` SET accessLevel = ?, updatedAt = NOW() WHERE userId = ?', [targetLevel, userId]);
-    res.json({ message: block ? 'User blocked' : 'User unblocked', accessLevel: targetLevel });
+
+    await pool.query('UPDATE `User` SET accessLevel = -accessLevel, updatedAt = NOW() WHERE userId = ?', [userId]);
+    res.json({ message: block ? 'User blocked' : 'User unblocked'});
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to update user status' });

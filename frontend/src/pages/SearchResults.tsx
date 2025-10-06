@@ -52,6 +52,12 @@ const SearchResults: React.FC = () => {
         setRows(res.data?.rows || []);
         setTotal(res.data?.total || 0);
       } catch (e: any) {
+        // 如果是使用 AbortController / axios 取消請求，忽略這種正常情況，不顯示錯誤
+        const canceled = e?.code === 'ERR_CANCELED' || e?.name === 'CanceledError' || e?.message === 'canceled';
+        if (canceled) {
+          // 靜默忽略，不設定 error，不輸出 log
+          return; // finally 仍會執行，loading 會被關掉
+        }
         setError(e?.response?.data?.error || 'Failed to load');
       } finally {
         setLoading(false);
@@ -107,7 +113,7 @@ const SearchResults: React.FC = () => {
       {!loading && rows.length === 0 && (
         <Box textAlign="center" sx={{ py: 6 }}>
           <Typography sx={{ mb: 2 }}>
-            {query ? 'No results found' : '請輸入關鍵字開始搜尋'}
+            {query ? 'No results found' : 'Please enter keywords to start searching'}
           </Typography>
           {query && (
             <Button variant="contained" component={Link} to="/course/create">Create a course</Button>
@@ -121,10 +127,10 @@ const SearchResults: React.FC = () => {
             <CardActionArea component={Link} to={`/course/${r.courseId}`}>
               <CardContent>
                 <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems={{ xs: 'flex-start', md: 'center' }} justifyContent="space-between">
-                  <Box>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left' }}>
                     <Typography variant="subtitle2" color="text.secondary">{r.courseId}</Typography>
                     <Typography variant="h6">{r.name}</Typography>
-                    <Typography variant="caption" color="text.secondary">評論數量：{r.reviewCount || 0}</Typography>
+                    <Typography variant="caption" color="text.secondary">reviews：{r.reviewCount || 0}</Typography>
                   </Box>
                   <Stack direction="row" spacing={1}>
                     <RatingComponent label="content" value={r.avgContentRating} />
