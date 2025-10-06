@@ -3,6 +3,8 @@ import {
   Alert,
   Box,
   Button,
+  Card,
+  CardContent,
   Dialog,
   DialogActions,
   DialogContent,
@@ -19,7 +21,7 @@ import {
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
-import { useAuth } from '../context/AuthContext';
+// import { useAuth } from '../context/AuthContext';
 
 interface Department { departmentId: string; name: string }
 
@@ -32,7 +34,7 @@ type FormValues = {
 };
 
 const CourseCreate: React.FC = () => {
-  const { user } = useAuth();
+  // const { user } = useAuth(); // Not currently used; uncomment if permission gating added
   const navigate = useNavigate();
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(false);
@@ -108,65 +110,69 @@ const CourseCreate: React.FC = () => {
   const canSubmit = formState.isValid;
 
   return (
-    <Stack spacing={3}>
-      <Typography variant="h5">Create course</Typography>
-      {error && <Alert severity="error">{error}</Alert>}
-      <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ maxWidth: 720 }}>
-        <Stack spacing={2}>
-          <TextField
-            label="courseId"
-            fullWidth
-            {...register('courseId', { required: 'Required', minLength: { value: 6, message: 'Min 6 chars' } })}
-            error={!!formState.errors.courseId}
-            helperText={formState.errors.courseId?.message}
-          />
+    <Box p={2} maxWidth={900} mx="auto">
+      <Typography variant="h5" gutterBottom>Create course</Typography>
+      <Card variant="outlined">
+        <CardContent>
+          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+          <Stack component="form" spacing={3} onSubmit={handleSubmit(onSubmit)}>
+            <Stack spacing={2}>
+              <TextField
+                label="courseId"
+                fullWidth
+                {...register('courseId', { required: 'Required', minLength: { value: 6, message: 'Min 6 chars' } })}
+                error={!!formState.errors.courseId}
+                helperText={formState.errors.courseId?.message}
+              />
 
-          <FormControl fullWidth>
-            <InputLabel id="dep-label">departmentId</InputLabel>
-            <Select
-              labelId="dep-label"
-              label="departmentId"
-              value={watch('departmentId')}
-              onChange={(e) => setValue('departmentId', e.target.value as string, { shouldValidate: true })}
-              required
-            >
-              {departments.map((d) => (
-                <MenuItem key={d.departmentId} value={d.departmentId}>{d.departmentId} — {d.name}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+              <FormControl fullWidth>
+                <InputLabel id="dep-label">departmentId</InputLabel>
+                <Select
+                  labelId="dep-label"
+                  label="departmentId"
+                  value={watch('departmentId')}
+                  onChange={(e) => setValue('departmentId', e.target.value as string, { shouldValidate: true })}
+                  required
+                >
+                  {departments.map((d) => (
+                    <MenuItem key={d.departmentId} value={d.departmentId}>{d.departmentId} — {d.name}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
 
-          <TextField
-            label="name"
-            fullWidth
-            {...register('name', { required: 'Required', maxLength: { value: 100, message: 'Max 100 chars' } })}
-            error={!!formState.errors.name}
-            helperText={formState.errors.name?.message}
-          />
+              <TextField
+                label="name"
+                fullWidth
+                {...register('name', { required: 'Required', maxLength: { value: 100, message: 'Max 100 chars' } })}
+                error={!!formState.errors.name}
+                helperText={formState.errors.name?.message}
+              />
 
-          <TextField
-            label="description"
-            fullWidth
-            multiline
-            minRows={3}
-            {...register('description')}
-          />
+              <TextField
+                label="description"
+                fullWidth
+                multiline
+                minRows={3}
+                {...register('description')}
+              />
 
-          <TextField
-            label="credits"
-            type="number"
-            inputProps={{ min: 0, max: 120 }}
-            {...register('credits', { required: 'Required', min: { value: 0, message: 'Min 0' }, max: { value: 120, message: 'Max 120' }, valueAsNumber: true })}
-            error={!!formState.errors.credits}
-            helperText={formState.errors.credits?.message}
-          />
+              <TextField
+                label="credits"
+                type="number"
+                inputProps={{ min: 0, max: 120 }}
+                {...register('credits', { required: 'Required', min: { value: 0, message: 'Min 0' }, max: { value: 120, message: 'Max 120' }, valueAsNumber: true })}
+                error={!!formState.errors.credits}
+                helperText={formState.errors.credits?.message}
+              />
+            </Stack>
 
-          <Stack direction="row" spacing={2}>
-            <Button type="submit" variant="contained" disabled={loading || !canSubmit}>Create</Button>
-            <Button variant="outlined" onClick={() => navigate(-1)}>Back</Button>
+            <Stack direction="row" spacing={2} justifyContent="flex-end">
+              <Button variant="outlined" onClick={() => navigate(-1)}>Back</Button>
+              <Button type="submit" variant="contained" disabled={loading || !canSubmit}>Create</Button>
+            </Stack>
           </Stack>
-        </Stack>
-      </Box>
+        </CardContent>
+      </Card>
 
       <Dialog open={existsDialog.open} onClose={() => setExistsDialog({ open: false, courseId: null })}>
         <DialogTitle>Course exists</DialogTitle>
@@ -180,7 +186,7 @@ const CourseCreate: React.FC = () => {
           <Button onClick={() => navigate(`/course/${existsDialog.courseId}`)} variant="contained">Go to course</Button>
         </DialogActions>
       </Dialog>
-    </Stack>
+    </Box>
   );
 };
 

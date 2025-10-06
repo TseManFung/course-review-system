@@ -157,7 +157,7 @@ router.get('/:courseId/offerings', authenticateToken, async (req, res) => {
 });
 
 // POST /course/:courseId/instructor - add instructor to a course offering (auto create offering)
-router.post('/:courseId/instructor', authenticateToken, requireAdmin, async (req, res) => {
+router.post('/:courseId/instructor', authenticateToken, async (req, res) => {
   try {
     const { courseId } = req.params;
     const { semesterId, instructorId } = req.body || {};

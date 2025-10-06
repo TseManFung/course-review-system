@@ -3,6 +3,8 @@ import {
   Alert,
   Box,
   Button,
+  Card,
+  CardContent,
   Dialog,
   DialogActions,
   DialogContent,
@@ -19,7 +21,7 @@ import {
 import { useForm } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
 import api from '../api';
-import { useAuth } from '../context/AuthContext';
+// import { useAuth } from '../context/AuthContext';
 
 interface Department { departmentId: string; name: string }
 
@@ -33,7 +35,7 @@ type FormValues = {
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const InstructorCreate: React.FC = () => {
-  const { user } = useAuth();
+  // const { user } = useAuth(); // Not used currently
   const navigate = useNavigate();
   const location = useLocation();
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -107,62 +109,61 @@ const InstructorCreate: React.FC = () => {
 
   const canSubmit = formState.isValid;
 
-  if (!user || Number(user.accessLevel) !== 0) {
-    return <Alert severity="warning">Admin only</Alert>;
-  }
 
   return (
-    <Stack spacing={3}>
-      <Typography variant="h5">Create instructor</Typography>
-      {error && <Alert severity="error">{error}</Alert>}
-      <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ maxWidth: 720 }}>
-        <Stack spacing={2}>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+    <Box p={2} maxWidth={900} mx="auto">
+      <Typography variant="h5" gutterBottom>Create instructor</Typography>
+      <Card variant="outlined">
+        <CardContent>
+          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+          <Stack component="form" spacing={3} onSubmit={handleSubmit(onSubmit)}>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+              <TextField
+                label="firstName"
+                fullWidth
+                {...register('firstName', { required: 'Required', maxLength: { value: 50, message: 'Max 50 chars' } })}
+                error={!!formState.errors.firstName}
+                helperText={formState.errors.firstName?.message}
+              />
+              <TextField
+                label="lastName"
+                fullWidth
+                {...register('lastName', { required: 'Required', maxLength: { value: 50, message: 'Max 50 chars' } })}
+                error={!!formState.errors.lastName}
+                helperText={formState.errors.lastName?.message}
+              />
+            </Stack>
+
             <TextField
-              label="firstName"
+              label="email (optional)"
               fullWidth
-              {...register('firstName', { required: 'Required', maxLength: { value: 50, message: 'Max 50 chars' } })}
-              error={!!formState.errors.firstName}
-              helperText={formState.errors.firstName?.message}
+              {...register('email')}
+              error={!!formState.errors.email}
+              helperText={formState.errors.email?.message}
             />
-            <TextField
-              label="lastName"
-              fullWidth
-              {...register('lastName', { required: 'Required', maxLength: { value: 50, message: 'Max 50 chars' } })}
-              error={!!formState.errors.lastName}
-              helperText={formState.errors.lastName?.message}
-            />
+
+            <FormControl fullWidth>
+              <InputLabel id="dep-label">departmentId</InputLabel>
+              <Select
+                labelId="dep-label"
+                label="departmentId"
+                value={watch('departmentId')}
+                onChange={(e) => setValue('departmentId', e.target.value as string, { shouldValidate: true })}
+                required
+              >
+                {departments.map((d) => (
+                  <MenuItem key={d.departmentId} value={d.departmentId}>{d.departmentId} — {d.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <Stack direction="row" spacing={2} justifyContent="flex-end">
+              <Button variant="outlined" onClick={() => navigate(-1)}>Back</Button>
+              <Button type="submit" variant="contained" disabled={loading || !canSubmit}>Create</Button>
+            </Stack>
           </Stack>
-
-          <TextField
-            label="email (optional)"
-            fullWidth
-            {...register('email')}
-            error={!!formState.errors.email}
-            helperText={formState.errors.email?.message}
-          />
-
-          <FormControl fullWidth>
-            <InputLabel id="dep-label">departmentId</InputLabel>
-            <Select
-              labelId="dep-label"
-              label="departmentId"
-              value={watch('departmentId')}
-              onChange={(e) => setValue('departmentId', e.target.value as string, { shouldValidate: true })}
-              required
-            >
-              {departments.map((d) => (
-                <MenuItem key={d.departmentId} value={d.departmentId}>{d.departmentId} — {d.name}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <Stack direction="row" spacing={2}>
-            <Button type="submit" variant="contained" disabled={loading || !canSubmit}>Create</Button>
-            <Button variant="outlined" onClick={() => navigate(-1)}>Back</Button>
-          </Stack>
-        </Stack>
-      </Box>
+        </CardContent>
+      </Card>
 
       <Dialog open={existsDialog} onClose={() => setExistsDialog(false)}>
         <DialogTitle>Email already exists</DialogTitle>
@@ -175,7 +176,7 @@ const InstructorCreate: React.FC = () => {
           <Button onClick={() => setExistsDialog(false)} autoFocus>Edit form</Button>
         </DialogActions>
       </Dialog>
-    </Stack>
+    </Box>
   );
 };
 

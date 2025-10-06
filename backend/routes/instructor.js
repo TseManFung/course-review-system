@@ -22,7 +22,7 @@ router.get('/', authenticateToken, requireAdmin, async (req, res) => {
 });
 
 // POST /instructor - create instructor
-router.post('/', authenticateToken, requireAdmin, async (req, res) => {
+router.post('/', authenticateToken, async (req, res) => {
   try {
     const { firstName, lastName, email, departmentId } = req.body || {};
     if (!firstName || !lastName || !departmentId) {

@@ -66,12 +66,15 @@ router.get('/my', authenticateToken, async (req, res) => {
 router.post('/', authenticateToken, async (req, res) => {
   try {
     const { userId } = req.user;
-    const { courseId, semesterId, contentRating, teachingRating, gradingRating, workloadRating, comment } = req.body || {};
+    const { courseId, semesterId, contentRating, teachingRating, gradingRating, workloadRating, comment, instructorIds } = req.body || {};
     if (!courseId || !semesterId) return res.status(400).json({ error: 'courseId and semesterId required' });
     const isIntInRange = (v) => Number.isInteger(v) && v >= 0 && v <= 10;
     if (![contentRating, teachingRating, gradingRating, workloadRating].every(isIntInRange)) {
       return res.status(400).json({ error: 'Ratings must be integers between 0 and 10' });
     }
+    let instructors = Array.isArray(instructorIds) ? instructorIds.filter(id => id !== null && id !== undefined && id !== '') : [];
+    // normalize to unique numeric or string ids
+    instructors = [...new Set(instructors.map(v => String(v).trim()).filter(v => v !== ''))];
 
     const conn = await pool.getConnection();
     try {
@@ -103,8 +106,21 @@ router.post('/', authenticateToken, async (req, res) => {
         [reviewId, (typeof comment === 'string' && comment.trim() !== '') ? comment.trim() : null]
       );
 
+      // Link instructors (optional, ignore invalid numeric conversion)
+      if (instructors.length > 0) {
+        for (const ins of instructors) {
+          const insId = isNaN(Number(ins)) ? ins : Number(ins);
+          try {
+            await conn.query(
+              'INSERT IGNORE INTO CourseOfferingInstructor (courseId, semesterId, instructorId) VALUES (?, ?, ?)',
+              [courseId, semesterId, insId]
+            );
+          } catch (e) { /* ignore single failure */ }
+        }
+      }
+
       await conn.commit();
-      res.status(201).json({ message: 'Review created', reviewId });
+      res.status(201).json({ message: 'Review created', reviewId, linkedInstructors: instructors.length });
     } catch (e) { await conn.rollback(); throw e; }
     finally { conn.release(); }
   } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to create review' }); }

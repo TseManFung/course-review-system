@@ -1,18 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Divider,
-  Drawer,
-  IconButton,
-  Stack,
-  Toolbar,
-  Typography,
-} from "@mui/material";
+import { Box, Button, Divider, Drawer, IconButton, Stack, Toolbar, Typography } from "@mui/material";
 import type { GridColDef } from "@mui/x-data-grid";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
@@ -24,8 +11,12 @@ import LockOpenIcon from "@mui/icons-material/LockOpen";
 import api from "../api";
 import { useAuth } from "../context/AuthContext";
 import type { EntityKind } from "./adminTable/types";
-import { CreateForm, EditForm } from "./adminTable/Forms";
 import { AdminEntityTable } from "./adminTable/AdminEntityTable";
+import { CreateDialog } from './adminTable/dialog/CreateDialog';
+import { EditDialog } from './adminTable/dialog/EditDialog';
+import { DeleteDialog } from './adminTable/dialog/DeleteDialog';
+import { BlockDialog } from './adminTable/dialog/BlockDialog';
+import { UserDetailDialog } from './adminTable/dialog/UserDetailDialog';
 
 // EntityKind moved to ./adminTable/types
 
@@ -718,110 +709,11 @@ const Admin: React.FC = () => {
         />
       </Box>
 
-      {/* Create dialog */}
-      <Dialog
-        open={createOpen}
-        onClose={() => setCreateOpen(false)}
-        fullWidth
-        maxWidth="sm"
-      >
-        <DialogTitle>New {active}</DialogTitle>
-        <DialogContent>
-          <CreateForm
-            active={active}
-            onSubmit={handleCreateSubmit}
-            onCancel={() => setCreateOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit dialog */}
-      <Dialog
-        open={editOpen}
-        onClose={() => setEditOpen(false)}
-        fullWidth
-        maxWidth="sm"
-      >
-        <DialogTitle>Edit {active}</DialogTitle>
-        <DialogContent>
-          <EditForm
-            active={active}
-            currentRow={currentRow}
-            onSubmit={handleEditSubmit}
-            onCancel={() => setEditOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete dialog */}
-      <Dialog open={deleteOpen} onClose={() => setDeleteOpen(false)}>
-        <DialogTitle>Confirm delete</DialogTitle>
-        <DialogContent>
-          This will perform a logical delete (or 501 if not supported by
-          schema).
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteOpen(false)}>Cancel</Button>
-          <Button
-            color="error"
-            variant="contained"
-            onClick={handleDeleteConfirm}
-          >
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Block/Unblock dialog */}
-      <Dialog open={blockOpen} onClose={() => setBlockOpen(false)}>
-        <DialogTitle>Block/Unblock user</DialogTitle>
-        <DialogActions>
-          <Button onClick={() => setBlockOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleBlockConfirm}>
-            Confirm
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* User details dialog */}
-      <Dialog
-        open={detailOpen}
-        onClose={() => setDetailOpen(false)}
-        fullWidth
-        maxWidth="md"
-      >
-        <DialogTitle>User details</DialogTitle>
-        <DialogContent>
-          {detailData ? (
-            <Box>
-              <Typography variant="subtitle1">
-                {detailData.user.userId} — {detailData.user.email}
-              </Typography>
-              <Typography variant="body2">
-                {detailData.user.firstName} {detailData.user.lastName} |
-                accessLevel: {detailData.user.accessLevel} | loginFail:{" "}
-                {detailData.user.loginFail}
-              </Typography>
-              <Divider sx={{ my: 2 }} />
-              <Typography variant="subtitle2">
-                Reviews: {detailData.reviews?.length ?? 0}
-              </Typography>
-              <Box component="ul">
-                {(detailData.reviews || []).map((r: any) => (
-                  <li key={r.reviewId}>
-                    [{r.createdAt}] {r.courseId} {r.semesterId} — content:
-                    {r.contentRating} teaching:{r.teachingRating} grading:
-                    {r.gradingRating} workload:{r.workloadRating}
-                    {r.comment ? ` — ${r.comment}` : ""}
-                  </li>
-                ))}
-              </Box>
-            </Box>
-          ) : (
-            "Loading..."
-          )}
-        </DialogContent>
-      </Dialog>
+      <CreateDialog open={createOpen} active={active} onClose={() => setCreateOpen(false)} onSubmit={handleCreateSubmit} />
+      <EditDialog open={editOpen} active={active} currentRow={currentRow} onClose={() => setEditOpen(false)} onSubmit={handleEditSubmit} />
+      <DeleteDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDeleteConfirm} />
+      <BlockDialog open={blockOpen} onClose={() => setBlockOpen(false)} onConfirm={handleBlockConfirm} />
+      <UserDetailDialog open={detailOpen} onClose={() => setDetailOpen(false)} detailData={detailData} />
     </Box>
   );
 };

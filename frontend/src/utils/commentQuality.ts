@@ -1,0 +1,117 @@
+// Utility for analyzing comment quality (zh/en mixed)
+export type CommentQualityResult = {
+  ok: boolean;
+  score: number; // 0-100 heuristic score
+  message?: string; // error or improvement suggestion
+};
+
+// Return true|string compatibility wrapper
+export function analyzeCommentQuality(raw: string): true | string {
+  const r = analyze(raw);
+  return r.ok ? true : r.message || "Invalid";
+}
+
+export function analyze(raw: string): CommentQualityResult {
+  if (!raw) return { ok: false, score: 0, message: "Comment is required" };
+  const text = raw.trim();
+  if (!text) return { ok: false, score: 0, message: "Comment is required" };
+
+  // Base score starts at length proportion
+  let score = Math.min(60, Math.floor(text.length / 10)); // up to 60 from length alone (>=600 chars saturates)
+
+  // Tokenization (mixed zh/en):
+  const cleaned = text.replace(/[\p{P}\p{S}]/gu, " ");
+  const tokenRegex = /[A-Za-z]+|\d+|[\u4e00-\u9fff]/g;
+  const words: string[] = [];
+  let m: RegExpExecArray | null;
+  while ((m = tokenRegex.exec(cleaned)) !== null) {
+    words.push(m[0]);
+  }
+  const uniqueWords = new Set(words.map(w => w.toLowerCase()));
+  const diversity = words.length ? uniqueWords.size / words.length : 0;
+
+  // Positive contributions
+  if (words.length >= 8) score += 10;
+  if (words.length >= 15) score += 5;
+  if (diversity > 0.4) score += 8;
+  else if (diversity > 0.3) score += 4;
+
+  // Negative heuristics (deductions)
+  const deductions: string[] = [];
+  const pushDeduct = (msg: string, amt: number) => {
+    score -= amt;
+    deductions.push(msg);
+  };
+
+  if (text.length < 15)
+    return {
+      ok: false,
+      score: 5,
+      message: "Comment is too short (min 15 chars)",
+    };
+  if (/(.)\1{6,}/.test(text)) pushDeduct("Too many repeated characters", 25);
+  if (/(..)(?:\1){4,}/.test(text)) pushDeduct("Too many repeated patterns", 20);
+  if (text.length >= 30 && diversity < 0.15)
+    pushDeduct("Content too repetitive", 25);
+
+  const punctMatches = text.match(/[\p{P}\p{S}]/gu) || [];
+  if (punctMatches.length / text.length > 0.3)
+    pushDeduct("Too many symbols/punctuation", 30);
+
+  const digitMatches = text.match(/\d/g) || [];
+  if (digitMatches.length / text.length > 0.4)
+    pushDeduct("Too many digits", 40);
+
+  const zhMatches = text.match(/[\u4e00-\u9fff]/g) || [];
+  if (zhMatches.length > 0 && zhMatches.length < 5 && text.length < 30)
+    pushDeduct("Add more detail for clarity", 15);
+
+  if (words.length < 3) pushDeduct("Too few words – please elaborate more", 25);
+
+  const lower = text.toLowerCase();
+  const gibberishTokens = [
+    "asd",
+    "qwe",
+    "zxc",
+    "lorem ipsum",
+    "test test",
+    "just test",
+    "123456",
+    "456",
+    "1111",
+    "0000",
+    "123",
+    "哈哈哈",
+    "呵呵",
+    "？？？？",
+    "???",
+    "沒東西寫",
+    "隨便寫寫",
+  ];
+  if (gibberishTokens.some((tok) => lower.includes(tok)))
+    pushDeduct("Content appears to be placeholder/gibberish", 40);
+
+  // Repetition of same word
+  const freq: Record<string, number> = {};
+  for (const w of words)
+    freq[w.toLowerCase()] = (freq[w.toLowerCase()] || 0) + 1;
+  const counts = Object.values(freq);
+  if (counts.length) {
+    const maxFreq = Math.max(...counts);
+    if (words.length >= 6 && maxFreq / words.length > 0.7)
+      pushDeduct("Too many repetitions of the same word", 25);
+  }
+
+  //score *= 2;
+  // Clamp score
+  score = Math.max(0, Math.min(100, score));
+  if (deductions.length) {
+    // Provide the first deduction as primary message
+    return { ok: false, score, message: deductions[0] };
+  }
+  // Passing threshold
+  const pass = score >= 80; // heuristic threshold
+  return pass
+    ? { ok: true, score }
+    : { ok: false, score, message: "Comment lacks depth and detail." };
+}

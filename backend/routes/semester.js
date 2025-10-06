@@ -5,7 +5,7 @@ const { buildPagination } = require('./utils');
 
 const router = express.Router();
 
-router.get('/', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
   try {
     const { offset, limit } = buildPagination(req);
     const search = (req.query.search || '').trim();
