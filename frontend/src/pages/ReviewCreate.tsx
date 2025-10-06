@@ -105,7 +105,7 @@ const ReviewCreate: React.FC = () => {
   // Live watch of comment for dynamic quality feedback
   const liveComment = useWatch({ control, name: 'comment' });
   const quality = analyzeQualityDetailed(liveComment || '');
-  const qualityColor = quality.ok ? 'success' : (quality.score >= 30 ? 'warning' : 'error');
+  const qualityColor = quality.ok ? 'success' : (quality.score >= 40 ? 'warning' : 'error');
 
   // Students only
   useEffect(() => {
@@ -485,7 +485,7 @@ const ReviewCreate: React.FC = () => {
                   sx={{ height: 8, borderRadius: 1, bgcolor: 'action.hover' }}
                 />
                 <Typography variant="caption" color={quality.ok ? 'success.main' : (qualityColor === 'warning' ? 'warning.main' : 'error.main')}>
-                  {quality.ok ? '✔ 通過品質檢查 Passed quality check' : `Quality: ${quality.score}/100 — ${quality.message}`}
+                  {quality.ok ? '✔ Passed quality check' : `Quality: ${quality.score}/100 — ${quality.message}`}
                 </Typography>
               </Stack>
             </Box>

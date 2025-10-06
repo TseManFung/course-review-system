@@ -11,6 +11,18 @@ export function analyzeCommentQuality(raw: string): true | string {
   return r.ok ? true : r.message || "Invalid";
 }
 
+const sigmoid = (x: number, k: number = 1): number => {
+  return 1 / (1 + Math.exp(-k * x));
+};
+
+const calculateScore = (length: number): number => {
+  return (
+    10 * sigmoid(length - 10, 1) +
+    10 * sigmoid(length - 25, 1) +
+    10 * sigmoid(length - 75, 1)
+  );
+};
+
 export function analyze(raw: string): CommentQualityResult {
   if (!raw) return { ok: false, score: 0, message: "Comment is required" };
   const text = raw.trim();
@@ -28,12 +40,13 @@ export function analyze(raw: string): CommentQualityResult {
     words.push(m[0]);
   }
   const uniqueWords = new Set(words.map(w => w.toLowerCase()));
+  const x = words.length;
   const diversity = words.length ? uniqueWords.size / words.length : 0;
 
+  
   // Positive contributions
-  if (words.length >= 8) score += 10;
-  if (words.length >= 15) score += 5;
-  if (diversity > 0.4) score += 8;
+  score += calculateScore(x);
+  if (diversity > 0.5) score += 10;
   else if (diversity > 0.3) score += 4;
 
   // Negative heuristics (deductions)
@@ -41,6 +54,7 @@ export function analyze(raw: string): CommentQualityResult {
   const pushDeduct = (msg: string, amt: number) => {
     score -= amt;
     deductions.push(msg);
+    console.log("Deduct", amt, msg);
   };
 
   if (text.length < 15)
@@ -98,19 +112,20 @@ export function analyze(raw: string): CommentQualityResult {
   const counts = Object.values(freq);
   if (counts.length) {
     const maxFreq = Math.max(...counts);
-    if (words.length >= 6 && maxFreq / words.length > 0.7)
-      pushDeduct("Too many repetitions of the same word", 25);
+    if (words.length >= 20 && maxFreq / words.length > 0.15)
+      pushDeduct("Too many repetitions of the same word", 100);
   }
 
   //score *= 2;
   // Clamp score
-  score = Math.max(0, Math.min(100, score));
+  score = Math.round(Math.max(0, Math.min(100, score)));
   if (deductions.length) {
     // Provide the first deduction as primary message
     return { ok: false, score, message: deductions[0] };
   }
   // Passing threshold
   const pass = score >= 80; // heuristic threshold
+  console.log(score)
   return pass
     ? { ok: true, score }
     : { ok: false, score, message: "Comment lacks depth and detail." };
