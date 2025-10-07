@@ -111,7 +111,15 @@ const Profile: React.FC = () => {
           ) : (
             <Stack spacing={2}>
               {reviews.map((r) => (
-                <Box key={r.reviewId} p={2} borderRadius={1} bgcolor={(theme) => theme.palette.mode === 'light' ? '#fafafa' : '#1e1e1e'}>
+                <Box
+                  key={r.reviewId}
+                  p={2}
+                  borderRadius={1}
+                  bgcolor={(theme) => theme.palette.mode === 'dark' ? '#121212' : '#fafafa'}
+                  sx={(theme) => ({
+                    border: theme.palette.mode === 'dark' ? '1px solid #ffffff' : '1px solid #000000',
+                  })}
+                >
                   <Typography variant="subtitle1">{r.courseId} — {r.semesterId}（{new Date(r.createdAt).toLocaleString()}）</Typography>
                   <Typography variant="body2">content: {r.contentRating} / teaching: {r.teachingRating} / grading: {r.gradingRating} / workload: {r.workloadRating}</Typography>
                   {r.comment && <Typography variant="body2" mt={1}>{r.comment}</Typography>}
