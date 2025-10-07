@@ -66,11 +66,11 @@ router.get('/search', authenticateToken, async (req, res) => {
 
     const [rows] = await pool.query(
       `SELECT c.courseId, c.name, c.departmentId, cd.description,
-        ROUND(IFNULL(AVG(r.contentRating), 0), 2) AS avgContentRating,
-        ROUND(IFNULL(AVG(r.teachingRating), 0), 2) AS avgTeachingRating,
-        ROUND(IFNULL(AVG(r.gradingRating), 0), 2) AS avgGradingRating,
-        ROUND(IFNULL(AVG(r.workloadRating), 0), 2) AS avgWorkloadRating,
-        ROUND((IFNULL(AVG(r.contentRating),0) + IFNULL(AVG(r.teachingRating),0) + IFNULL(AVG(r.gradingRating),0) + IFNULL(AVG(r.workloadRating),0)) / 4, 2) AS avgTotal,
+        ROUND(AVG(r.contentRating), 2) AS avgContentRating,
+        ROUND(AVG(r.teachingRating), 2) AS avgTeachingRating,
+        ROUND(AVG(r.gradingRating), 2) AS avgGradingRating,
+        ROUND(AVG(r.workloadRating), 2) AS avgWorkloadRating,
+        ROUND((AVG(r.contentRating) + AVG(r.teachingRating) + AVG(r.gradingRating) + AVG(r.workloadRating)) / 4, 2) AS avgTotal,
         COUNT(r.reviewId) AS reviewCount,
         MAX(r.createdAt) AS latestReview
        FROM Course c
@@ -183,7 +183,7 @@ router.post('/:courseId/instructor', authenticateToken, async (req, res) => {
 });
 
 
-router.post('/', authenticateToken, requireAdmin, async (req, res) => {
+router.post('/', authenticateToken, async (req, res) => {
   try {
     const { courseId, departmentId, name, credits, description } = req.body || {};
     if (!courseId || !departmentId || !name || typeof credits !== 'number') {

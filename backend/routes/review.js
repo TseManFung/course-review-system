@@ -68,13 +68,32 @@ router.post('/', authenticateToken, async (req, res) => {
     const { userId } = req.user;
     const { courseId, semesterId, contentRating, teachingRating, gradingRating, workloadRating, comment, instructorIds } = req.body || {};
     if (!courseId || !semesterId) return res.status(400).json({ error: 'courseId and semesterId required' });
-    const isIntInRange = (v) => Number.isInteger(v) && v >= 0 && v <= 10;
+    const isIntInRange = (v) => Number.isInteger(v) && v >= 1 && v <= 10;
     if (![contentRating, teachingRating, gradingRating, workloadRating].every(isIntInRange)) {
-      return res.status(400).json({ error: 'Ratings must be integers between 0 and 10' });
+      return res.status(400).json({ error: 'Ratings must be integers between 1 and 10' });
     }
     let instructors = Array.isArray(instructorIds) ? instructorIds.filter(id => id !== null && id !== undefined && id !== '') : [];
+
     // normalize to unique numeric or string ids
     instructors = [...new Set(instructors.map(v => String(v).trim()).filter(v => v !== ''))];
+
+    // 預先驗證講師是否存在，減少外鍵錯誤 (1452)
+    let existingInstructorIds = [];
+    let invalidInstructorIds = [];
+    if (instructors.length > 0) {
+      try {
+        const placeholders = instructors.map(() => '?').join(',');
+        const [rows] = await pool.query(
+          `SELECT instructorId FROM Instructor WHERE instructorId IN (${placeholders}) AND status = 'C'`,
+          instructors
+        );
+        const foundSet = new Set(rows.map(r => String(r.instructorId)));
+        existingInstructorIds = instructors.filter(id => foundSet.has(String(id)));
+        invalidInstructorIds = instructors.filter(id => !foundSet.has(String(id)));
+      } catch (e) {
+        console.error('Failed to pre-validate instructors', e);
+      }
+    }
 
     const conn = await pool.getConnection();
     try {
@@ -106,21 +125,25 @@ router.post('/', authenticateToken, async (req, res) => {
         [reviewId, (typeof comment === 'string' && comment.trim() !== '') ? comment.trim() : null]
       );
 
-      // Link instructors (optional, ignore invalid numeric conversion)
-      if (instructors.length > 0) {
-        for (const ins of instructors) {
-          const insId = isNaN(Number(ins)) ? ins : Number(ins);
+      // Link only existing instructors to avoid foreign key violation
+      if (existingInstructorIds.length > 0) {
+        for (const ins of existingInstructorIds) {
           try {
             await conn.query(
               'INSERT IGNORE INTO CourseOfferingInstructor (courseId, semesterId, instructorId) VALUES (?, ?, ?)',
-              [courseId, semesterId, insId]
+              [courseId, semesterId, ins]
             );
-          } catch (e) { /* ignore single failure */ }
+          } catch (e) { console.error('Failed to link instructor', ins, e); }
         }
       }
 
       await conn.commit();
-      res.status(201).json({ message: 'Review created', reviewId, linkedInstructors: instructors.length });
+      res.status(201).json({
+        message: 'Review created',
+        reviewId,
+        linkedInstructors: existingInstructorIds.length,
+        invalidInstructors: invalidInstructorIds,
+      });
     } catch (e) { await conn.rollback(); throw e; }
     finally { conn.release(); }
   } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to create review' }); }

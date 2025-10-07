@@ -26,14 +26,14 @@ import Tooltip from '@mui/material/Tooltip';
 import { useForm, Controller, useWatch } from 'react-hook-form';
 import api from '../api';
 import LinearProgress from '@mui/material/LinearProgress';
-import { analyzeCommentQuality, analyze as analyzeQualityDetailed } from '../utils/commentQuality';
+import { analyze as analyzeQualityDetailed } from '../utils/commentQuality';
 import { useAuth } from '../context/AuthContext';
 
 type OfferingRow = {
   courseId: string;
   semesterId: string;
   semesterName: string;
-  instructorId: string | number | null;
+  instructorId: string | null; // Snowflake / BIGINT 以字串表示，避免精度問題
   firstName?: string | null;
   lastName?: string | null;
   email?: string | null;
@@ -45,7 +45,7 @@ type SemesterEntry = {
 };
 
 type InstructorEntry = {
-  instructorId: string | number;
+  instructorId: string; // 統一字串型別
   firstName: string;
   lastName: string;
   email?: string | null;
@@ -104,8 +104,9 @@ const ReviewCreate: React.FC = () => {
 
   // Live watch of comment for dynamic quality feedback
   const liveComment = useWatch({ control, name: 'comment' });
+  const MIN_SUBMIT_SCORE = 40; // form accept threshold
   const quality = analyzeQualityDetailed(liveComment || '');
-  const qualityColor = quality.ok ? 'success' : (quality.score >= 40 ? 'warning' : 'error');
+  const qualityColor = quality.ok ? 'success' : (quality.score >= MIN_SUBMIT_SCORE ? 'warning' : 'error');
 
   // Students only
   useEffect(() => {
@@ -181,7 +182,7 @@ const ReviewCreate: React.FC = () => {
         const key = o.instructorId as string | number;
         if (!byId.has(key)) {
           byId.set(key, {
-            instructorId: key,
+            instructorId: String(key),
             firstName: o.firstName || '',
             lastName: o.lastName || '',
             email: o.email || null,
@@ -217,8 +218,8 @@ const ReviewCreate: React.FC = () => {
     return () => clearTimeout(handle);
   }, [searchQuery]);
 
-  // Rating validation (0-10 integer)
-  const validateRating = (v: number | null) => typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= 10;
+  // Rating validation (1-10 integer)
+  const validateRating = (v: number | null) => typeof v === 'number' && Number.isInteger(v) && v >= 1 && v <= 10;
 
   // Tooltip descriptions for each rating category
   const ratingDescriptions = {
@@ -379,8 +380,6 @@ const ReviewCreate: React.FC = () => {
               <Button size="small" sx={{ mt: 1 }} onClick={() => navigate('/instructor/create', { state: { from: location.pathname } })}>Create new instructor</Button>
             </Box>
 
-            {/* 原本的 select 移除，改由 autocomplete 控制 instructorId */}
-
             {/* Four ratings (1-10) */}
             <Box>
               <Typography variant="subtitle1" gutterBottom>
@@ -458,8 +457,14 @@ const ReviewCreate: React.FC = () => {
               control={control}
               rules={{
                 validate: (v) => {
-                  if (v && v.trim().length > 10000) return 'Max 10000 characters';
-                  return analyzeCommentQuality(v);
+                  const val = (v || '').trim();
+                  if (val.length === 0) return 'Comment is required';
+                  if (val.length > 10000) return 'Max 10000 characters';
+                  const res = analyzeQualityDetailed(val);
+                  if (res.score < MIN_SUBMIT_SCORE) {
+                    return res.message || 'Comment needs more detail';
+                  }
+                  return true; // Acceptable (even if not full pass >=80)
                 }
               }}
               render={({ field }) => (
@@ -497,7 +502,7 @@ const ReviewCreate: React.FC = () => {
               <Button variant="outlined" onClick={() => navigate(-1)}>
                 Cancel
               </Button>
-              <Button type="submit" variant="contained" disabled={quality.score < 40 || isSubmitting || !selectedSemesterId}>
+              <Button type="submit" variant="contained" disabled={quality.score < MIN_SUBMIT_SCORE || isSubmitting || !selectedSemesterId}>
                 Submit review
               </Button>
             </Stack>

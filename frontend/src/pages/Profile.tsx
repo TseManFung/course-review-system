@@ -17,9 +17,10 @@ import {
 import api from '../api';
 import { useAuth } from '../context/AuthContext';
 import { useLocation } from 'react-router-dom';
+import type { SnowflakeId } from '../types/ids';
 
 type MyReview = {
-  reviewId: string | number;
+  reviewId: SnowflakeId; // SnowflakeId 統一型別
   userId: string;
   courseId: string;
   semesterId: string;

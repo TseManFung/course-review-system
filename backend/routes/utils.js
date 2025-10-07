@@ -25,6 +25,7 @@ const MAX_SEQUENCE = (BigInt(1) << SEQUENCE_BITS) - BigInt(1);   // 4095
 const WORKER_ID_SHIFT = SEQUENCE_BITS; // 12
 const TIMESTAMP_SHIFT = WORKER_ID_BITS + SEQUENCE_BITS; // 22
 
+// Worker ID 仍允許用數字環境變數，但僅限 0..1023 範圍內。
 const envWorker = Number(process.env.WORKER_ID || '1');
 const workerId = BigInt(Math.max(0, Math.min(envWorker, Number(MAX_WORKER_ID))));
 
@@ -43,6 +44,8 @@ function waitNextMillis(lastTs) {
   return ts;
 }
 
+// generateSnowflakeId 產生的值可能超過 JS 安全整數範圍，務必以『字串』使用/傳輸。
+// 前端與其他服務不可做 Number()/parseInt() 轉換，否則會造成尾端位元精度喪失。
 function generateSnowflakeId() {
   let ts = currentTimeMs();
 
@@ -62,7 +65,7 @@ function generateSnowflakeId() {
   lastTimestamp = ts;
 
   const id = ((ts - EPOCH) << TIMESTAMP_SHIFT) | (workerId << WORKER_ID_SHIFT) | sequence;
-  return id.toString();
+  return id.toString(); // 永遠回傳字串
 }
 
 module.exports = {generateSnowflakeId , PASSWORD_REGEX, EMAIL_REGEX, toInt, buildPagination };

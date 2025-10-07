@@ -46,8 +46,10 @@ interface Stats {
   count: number;
 }
 
+import type { SnowflakeId } from '../types/ids';
+
 interface ReviewRow {
-  reviewId: string;
+  reviewId: SnowflakeId;
   userId: string;
   courseId: string;
   semesterId: string;
@@ -164,12 +166,12 @@ const CourseDetail: React.FC = () => {
               <Card>
                 <CardContent>
                   <Typography variant="subtitle1" sx={{ mb: 1 }}>Review stats</Typography>
-                  <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
+                    <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', justifyContent: 'center' }}>
                     <RatingComponent label="content" value={stats?.contentRating ?? undefined} />
                     <RatingComponent label="teaching" value={stats?.teachingRating ?? undefined} />
                     <RatingComponent label="grading" value={stats?.gradingRating ?? undefined} />
                     <RatingComponent label="workload" value={stats?.workloadRating ?? undefined} />
-                  </Stack>
+                    </Stack>
                   <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>Total reviews: {stats?.count ?? 0}</Typography>
                 </CardContent>
               </Card>

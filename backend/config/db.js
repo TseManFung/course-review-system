@@ -20,6 +20,9 @@ const pool = mysql.createPool({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
+  // BIGINT 精度：確保像 snowflake 這樣的大數以字串形式傳回，避免 JS 53-bit 浮點精度問題
+  supportBigNumbers: true,
+  bigNumberStrings: true,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,

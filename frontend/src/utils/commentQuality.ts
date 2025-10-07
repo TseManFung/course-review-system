@@ -90,17 +90,6 @@ export function analyze(raw: string): CommentQualityResult {
     "lorem ipsum",
     "test test",
     "just test",
-    "123456",
-    "456",
-    "1111",
-    "0000",
-    "123",
-    "哈哈哈",
-    "呵呵",
-    "？？？？",
-    "???",
-    "沒東西寫",
-    "隨便寫寫",
   ];
   if (gibberishTokens.some((tok) => lower.includes(tok)))
     pushDeduct("Content appears to be placeholder/gibberish", 40);
