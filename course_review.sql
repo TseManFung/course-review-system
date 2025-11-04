@@ -27,9 +27,9 @@ CREATE TABLE `Course` (
   `courseId` varchar(20) PRIMARY KEY NOT NULL COMMENT 'Unique course code, e.g., COMP1010',
   `departmentId` varchar(10) NOT NULL,
   `name` varchar(100) NOT NULL COMMENT 'Course name, e.g., Introduction to Programming',
-  `credits` int NOT NULL COMMENT 'Number of credits, e.g., 3, range: min 0 - max 6',
+  `credits` int NOT NULL COMMENT 'Number of credits, e.g., 3, range: min 0 - max 12',
   `status` ENUM ('C', 'D') NOT NULL DEFAULT 'C' COMMENT 'C = Create, D = Delete',
-  CONSTRAINT `chk_credits` CHECK (`credits` BETWEEN 0 AND 6),
+  CONSTRAINT `chk_credits` CHECK (`credits` BETWEEN 0 AND 12),
   CONSTRAINT `chk_courseId_length` CHECK (LENGTH(`courseId`) >= 6)
 );
 

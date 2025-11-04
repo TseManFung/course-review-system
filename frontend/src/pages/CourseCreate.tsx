@@ -159,8 +159,8 @@ const CourseCreate: React.FC = () => {
               <TextField
                 label="credits"
                 type="number"
-                inputProps={{ min: 0, max: 120 }}
-                {...register('credits', { required: 'Required', min: { value: 0, message: 'Min 0' }, max: { value: 120, message: 'Max 120' }, valueAsNumber: true })}
+                inputProps={{ min: 0, max: 12 }}
+                {...register('credits', { required: 'Required', min: { value: 0, message: 'Min 0' }, max: { value: 12, message: 'Max 12' }, valueAsNumber: true })}
                 error={!!formState.errors.credits}
                 helperText={formState.errors.credits?.message}
               />
