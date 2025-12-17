@@ -1,0 +1,40 @@
+version: '3.8'
+services:
+  db:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: example  # your root password
+      MYSQL_DATABASE: CRS_DB  # default database name
+      MYSQL_USER: user  # your user
+      MYSQL_PASSWORD: password # your user password
+    ports:
+      - "3306:3306"  # for local access if needed
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./course_review.sql:/docker-entrypoint-initdb.d/init.sql  # auto-import SQL to initialize User, Course, etc. tables
+
+  backend:
+    build: ./backend
+    ports:
+      - "54320:54320"  # exposed to PC 192.168.0.105:54320
+    environment:
+      - DB_HOST=db  # connect to Docker internal db
+      - DB_USER=root
+      - DB_PASSWORD=example
+      - DB_NAME=CRS_DB
+      - PORT=54320
+    depends_on:
+      - db
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "54321:54321"  # exposed to PC 192.168.0.105:54321
+    environment:
+      - VITE_API_URL=http://backend:54320  # connect to backend (Docker internal network)
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:
