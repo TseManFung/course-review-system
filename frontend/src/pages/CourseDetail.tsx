@@ -104,7 +104,6 @@ const CourseDetail: React.FC = () => {
         setStats(d?.stats || null);
         const mergedOfferings: OfferingRow[] = Array.isArray(d?.offerings) ? d.offerings : [];
         const extraOfferings: OfferingRow[] = Array.isArray(offeringsRes.data) ? offeringsRes.data : [];
-        // merge arrays (avoid duplicates by key semesterId+instructorId)
         const key = (o: OfferingRow) => `${o.semesterId}|${o.instructorId ?? ''}`;
         const map = new Map<string, OfferingRow>();
         for (const o of [...mergedOfferings, ...extraOfferings]) map.set(key(o), o);
@@ -128,7 +127,6 @@ const CourseDetail: React.FC = () => {
         const res = await api.get(`/course/${courseId}/reviews`, { params: { page, limit: LIMIT } });
         if (!active) return;
         setReviews(res.data?.reviews || []);
-        // average includes count
         setStats((prev) => ({ ...(prev || { contentRating: null, teachingRating: null, gradingRating: null, workloadRating: null, count: 0 }), ...(res.data?.average || {}) }));
       } catch (e) {
         if (!active) return;
@@ -144,11 +142,10 @@ const CourseDetail: React.FC = () => {
 
   return (
     <Container sx={{ py: 3 }}>
-  {loading && <Typography>Loading…</Typography>}
+      {loading && <Typography>Loading…</Typography>}
       {error && <Typography color="error">{error}</Typography>}
       {!loading && course && (
         <Stack spacing={3}>
-          {/* 基本資訊與統計 */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '7fr 5fr' }, gap: 2 }}>
             <Box>
               <Card>
@@ -178,7 +175,6 @@ const CourseDetail: React.FC = () => {
             </Box>
           </Box>
 
-          {/* 開設資訊 */}
           <Card>
             <CardContent>
               <Typography variant="subtitle1" sx={{ mb: 1 }}>Offerings</Typography>
@@ -210,14 +206,12 @@ const CourseDetail: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Create review button (students only) */}
           {user && Number(user.accessLevel) === 10000 && (
             <Box>
               <Button variant="contained" onClick={() => navigate(`/course/${courseId}/review/create`)}>Write a review</Button>
             </Box>
           )}
 
-          {/* 評論列表 */}
           <Card>
             <CardContent>
               <Stack direction={{ xs: 'column', md: 'row' }} alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>

@@ -18,8 +18,6 @@ import { DeleteDialog } from './adminTable/dialog/DeleteDialog';
 import { BlockDialog } from './adminTable/dialog/BlockDialog';
 import { UserDetailDialog } from './adminTable/dialog/UserDetailDialog';
 
-// EntityKind moved to ./adminTable/types
-
 type PagedResp<T> = { total: number; rows: T[] };
 
 const PAGE_SIZES = [30, 50, 80, 100] as const;
@@ -38,7 +36,6 @@ const Admin: React.FC = () => {
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Dialog state (create/edit/delete)
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -47,7 +44,6 @@ const Admin: React.FC = () => {
   const [currentRow, setCurrentRow] = useState<any | null>(null);
   const [detailData, setDetailData] = useState<any | null>(null);
 
-  // Permission: admin only
   useEffect(() => {
     if (!user) return;
     if (user.accessLevel !== 0) {
@@ -56,7 +52,6 @@ const Admin: React.FC = () => {
     }
   }, [user]);
 
-  // Column config
   const columns: GridColDef[] = useMemo(() => {
     switch (active) {
       case "department":
@@ -364,7 +359,6 @@ const Admin: React.FC = () => {
     }
   }, [active]);
 
-  // Data loading
   const loadData = async () => {
     try {
       setLoading(true);
@@ -425,14 +419,12 @@ const Admin: React.FC = () => {
 
   const refresh = () => loadData();
 
-  // Event: switch entity
   const switchTo = (k: EntityKind) => {
     setActive(k);
     setPage(1);
     setSearch("");
   };
 
-  // Action: user detail
   async function handleUserDetail(row: any) {
     setCurrentRow(row);
     const { data } = await api.get(`/user/${row.userId}/details`);
@@ -440,7 +432,6 @@ const Admin: React.FC = () => {
     setDetailOpen(true);
   }
 
-  // Action: delete (logical)
   async function handleDeleteConfirm() {
     if (!currentRow) return;
     const id =
@@ -471,7 +462,6 @@ const Admin: React.FC = () => {
     refresh();
   }
 
-  // Action: create
   async function handleCreateSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
@@ -492,7 +482,6 @@ const Admin: React.FC = () => {
     refresh();
   }
 
-  // Action: edit
   async function handleEditSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!currentRow) return;
@@ -528,7 +517,6 @@ const Admin: React.FC = () => {
     refresh();
   }
 
-  // Action: block/unblock
   async function handleBlockConfirm() {
     if (!currentRow) return;
     const blocked = currentRow.accessLevel < 0;
@@ -541,10 +529,7 @@ const Admin: React.FC = () => {
     refresh();
   }
 
-  // Forms moved to ./adminTable/Forms
-
   return (
-    // Full-bleed layout: escape potential parent Container max-width 只改這裡，不動外層 Container
     <Box
       sx={{
         display: "flex",
@@ -558,7 +543,6 @@ const Admin: React.FC = () => {
         overflowX: "hidden",
       }}
     >
-      {/* Sidebar */}
       <Drawer
         variant="persistent"
         open={drawerOpen}
@@ -672,7 +656,6 @@ const Admin: React.FC = () => {
         </IconButton>
       )}
 
-      {/* Main area */}
       <Box
         component="main"
         sx={{

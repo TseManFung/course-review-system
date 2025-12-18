@@ -5,7 +5,6 @@ const { generateSnowflakeId } = require('./utils');
 
 const router = express.Router();
 
-// Admin list encouragements with pagination and optional search
 router.get('/', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
@@ -28,7 +27,6 @@ router.get('/', authenticateToken, requireAdmin, async (req, res) => {
   }
 });
 
-// GET /encouragement/random
 router.get('/random', async (req, res) => {
   try {
     const [rows] = await pool.query(
@@ -42,7 +40,6 @@ router.get('/random', async (req, res) => {
   }
 });
 
-// POST /encouragement
 router.post('/', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { content } = req.body || {};
@@ -59,7 +56,6 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
   }
 });
 
-// PATCH /encouragement/:encouragementId
 router.patch('/:encouragementId', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { encouragementId } = req.params;
@@ -77,7 +73,6 @@ router.patch('/:encouragementId', authenticateToken, requireAdmin, async (req, r
   }
 });
 
-// PATCH /encouragement/:encouragementId/delete
 router.patch('/:encouragementId/delete', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { encouragementId } = req.params;

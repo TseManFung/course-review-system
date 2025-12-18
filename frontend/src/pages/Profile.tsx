@@ -20,7 +20,7 @@ import { useLocation } from 'react-router-dom';
 import type { SnowflakeId } from '../types/ids';
 
 type MyReview = {
-  reviewId: SnowflakeId; // SnowflakeId 統一型別
+  reviewId: SnowflakeId;
   userId: string;
   courseId: string;
   semesterId: string;
@@ -138,7 +138,6 @@ const Profile: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* 更改密碼對話框 */}
       <Dialog open={pwdOpen} onClose={() => setPwdOpen(false)} fullWidth maxWidth="sm">
         <DialogTitle>Change password</DialogTitle>
         <DialogContent>
@@ -156,7 +155,6 @@ const Profile: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      {/* 刪除帳戶對話框 */}
       <Dialog open={delOpen} onClose={() => setDelOpen(false)}>
         <DialogTitle>Delete account</DialogTitle>
         <DialogContent>

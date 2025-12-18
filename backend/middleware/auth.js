@@ -16,9 +16,6 @@ const authenticateToken = (req, res, next) => {
     next();
   });
 };
-/**
- * Require admin (accessLevel === 0)
- */
 const requireAdmin = (req, res, next) => {
   if (!req.user || typeof req.user.accessLevel === 'undefined') {
     return res.status(401).json({ error: 'Unauthorized' });

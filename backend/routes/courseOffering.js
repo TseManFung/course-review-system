@@ -4,7 +4,6 @@ const { authenticateToken, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
-// POST /course-offering - create a course offering (and optionally instructors later)
 router.post('/', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { courseId, semesterId } = req.body || {};

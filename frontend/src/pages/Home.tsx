@@ -40,14 +40,12 @@ const Home: React.FC = () => {
         return;
       }
       await registerUser(data);
-      // 註冊成功後，可提示使用者前往信箱驗證（若後端採用信件流程）。
       setMode('login');
     } catch (e: any) {
       setError(e?.response?.data?.error || 'Register failed');
     }
   };
 
-  // 已登入時抓取隨機加油句子
   useEffect(() => {
     let active = true;
     const fetchEnc = async () => {
@@ -75,7 +73,6 @@ const Home: React.FC = () => {
   };
 
   if (user) {
-    // Logged-in: show big search + random encouragement
     return (
       <Stack spacing={3}>
         <Typography variant="h5">Welcome back, {user.firstName}!</Typography>

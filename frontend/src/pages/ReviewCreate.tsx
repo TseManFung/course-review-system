@@ -33,7 +33,7 @@ type OfferingRow = {
   courseId: string;
   semesterId: string;
   semesterName: string;
-  instructorId: string | null; // Snowflake / BIGINT 以字串表示，避免精度問題
+  instructorId: string | null;
   firstName?: string | null;
   lastName?: string | null;
   email?: string | null;
@@ -45,7 +45,7 @@ type SemesterEntry = {
 };
 
 type InstructorEntry = {
-  instructorId: string; // 統一字串型別
+  instructorId: string;
   firstName: string;
   lastName: string;
   email?: string | null;
@@ -54,17 +54,13 @@ type InstructorEntry = {
 type FormValues = {
   courseId: string;
   semesterId: string;
-  instructorIds: string[]; // 多位教師
+  instructorIds: string[];
   contentRating: number | null;
   teachingRating: number | null;
   gradingRating: number | null;
   workloadRating: number | null;
-  comment: string; // 必填評論
+  comment: string;
 };
-
-// Basic frontend semantic / quality heuristics for comment
-// Prevent obviously meaningless or low-effort inputs (supports zh / en mixed)
-// Removed inline analyzeCommentQuality (moved to utils/commentQuality.ts)
 
 const ReviewCreate: React.FC = () => {
   const navigate = useNavigate();
@@ -72,7 +68,6 @@ const ReviewCreate: React.FC = () => {
   const location = useLocation();
   const { user } = useAuth();
 
-  // 學期與教師資料
   const [offerings, setOfferings] = useState<OfferingRow[]>([]);
   const [semesters, setSemesters] = useState<SemesterEntry[]>([]);
   const [selectedSemesterId, setSelectedSemesterId] = useState<string>('');
@@ -81,7 +76,6 @@ const ReviewCreate: React.FC = () => {
   const [searchResults, setSearchResults] = useState<InstructorEntry[]>([]);
   const [loadingInstructors, setLoadingInstructors] = useState(false);
 
-  // 重複評論對話框
   const [dupDialogOpen, setDupDialogOpen] = useState(false);
 
   const {
@@ -102,21 +96,18 @@ const ReviewCreate: React.FC = () => {
     },
   });
 
-  // Live watch of comment for dynamic quality feedback
   const liveComment = useWatch({ control, name: 'comment' });
-  const MIN_SUBMIT_SCORE = 40; // form accept threshold
+  const MIN_SUBMIT_SCORE = 40;
   const quality = analyzeQualityDetailed(liveComment || '');
   const qualityColor = quality.ok ? 'success' : (quality.score >= MIN_SUBMIT_SCORE ? 'warning' : 'error');
 
-  // Students only
   useEffect(() => {
-    if (!user) return; // 等待狀態載入
+    if (!user) return;
     if (user && user.accessLevel !== 10000) {
       navigate(`/course/${courseId}`);
     }
   }, [user, navigate, courseId]);
 
-  // Load course offerings -> initial semester list (only those with offerings)
   useEffect(() => {
     let mounted = true;
     if (!courseId) return;
@@ -126,7 +117,6 @@ const ReviewCreate: React.FC = () => {
         if (!mounted) return;
         const off = data || [];
         setOfferings(off);
-        // 產生唯一學期清單（已按後端 DESC 排序）
         const seen = new Set<string>();
         const sems: SemesterEntry[] = [];
         for (const row of off) {
@@ -139,9 +129,7 @@ const ReviewCreate: React.FC = () => {
         const first = sems[0]?.semesterId || '';
         setSelectedSemesterId(first);
         setValue('semesterId', first);
-        // 不再顯示最新學期教師 chip，以自動完成搜尋取代
       } catch {
-        // 忽略錯誤，保持空清單（允許手動輸入學期）
       }
     })();
     return () => {
@@ -149,7 +137,6 @@ const ReviewCreate: React.FC = () => {
     };
   }, [courseId, setValue]);
 
-  // 取得所有學期（允許使用者選擇任何學期，而不只限於該課程已有 offering 的）
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -160,20 +147,16 @@ const ReviewCreate: React.FC = () => {
         setSemesters(() => {
           const map = new Map<string, SemesterEntry>();
           for (const r of rows) {
-              map.set(r.semesterId, { semesterId: r.semesterId, semesterName: r.name });
-            
+            map.set(r.semesterId, { semesterId: r.semesterId, semesterName: r.name });
           }
-          // 依 semesterId 逆序 (假設 YYYYsemX 字串比較可行)
-          return Array.from(map.values()).sort((a,b)=> b.semesterId.localeCompare(a.semesterId));
+          return Array.from(map.values()).sort((a, b) => b.semesterId.localeCompare(a.semesterId));
         });
       } catch {
-        // ignore
       }
     })();
     return () => { mounted = false; };
   }, []);
 
-  // For selected semester, get existing instructors (from offerings)
   const semesterInstructors: InstructorEntry[] = useMemo(() => {
     const byId = new Map<string | number, InstructorEntry>();
     offerings
@@ -192,14 +175,9 @@ const ReviewCreate: React.FC = () => {
     return Array.from(byId.values());
   }, [offerings, selectedSemesterId]);
 
-  // 舊的合併與手動搜尋已移除，改用 debounce + Autocomplete 後端查詢
-
-  // When switching semester, clear selected instructor
   useEffect(() => {
     setValue('instructorIds', []);
   }, [selectedSemesterId, setValue]);
-
-  // debounce 搜尋計時器
   useEffect(() => {
     const q = searchQuery.trim();
     if (!q) {
@@ -214,14 +192,12 @@ const ReviewCreate: React.FC = () => {
           setSearchResults(data || []);
         } finally { setLoadingInstructors(false); }
       })();
-    }, 400); // 400ms debounce
+    }, 400);
     return () => clearTimeout(handle);
   }, [searchQuery]);
 
-  // Rating validation (1-10 integer)
   const validateRating = (v: number | null) => typeof v === 'number' && Number.isInteger(v) && v >= 1 && v <= 10;
 
-  // Tooltip descriptions for each rating category
   const ratingDescriptions = {
     content: `The content reflects the student's evaluation of the quality of the course content, ranging from 1 to 10, where 1 indicates extremely poor and 10 indicates excellent. This rating assesses the teaching materials, course design, depth, and relevance of the content. For example, students may rate based on whether the course covers practical knowledge, if the materials are clear and understandable, and if the content aligns with the course objectives.`,
     teaching: `The teaching reflects the student's evaluation of the instructor's teaching performance, ranging from 1 to 10, where 1 indicates extremely poor and 10 indicates excellent. This rating focuses on the instructor’s teaching style, clarity of explanations, interactivity, and support provided to students. For example, students may rate based on whether the instructor clearly conveys concepts, actively responds to questions, and inspires interest in learning.`,
@@ -230,11 +206,9 @@ const ReviewCreate: React.FC = () => {
   } as const;
 
   const onSubmit = async (values: FormValues) => {
-  // Frontend validation
-  const ok = [values.contentRating, values.teachingRating, values.gradingRating, values.workloadRating].every(validateRating);
+    const ok = [values.contentRating, values.teachingRating, values.gradingRating, values.workloadRating].every(validateRating);
     if (!ok) return;
 
-  // Check duplicate review
     const { data: chk } = await api.get<{ exists: boolean }>(`/review/check`, {
       params: { courseId, semesterId: values.semesterId },
     });
@@ -242,8 +216,6 @@ const ReviewCreate: React.FC = () => {
       setDupDialogOpen(true);
       return;
     }
-
-  // Submit (backend will ensure CourseOffering exists)
     await api.post(`/review`, {
       courseId,
       semesterId: values.semesterId,
