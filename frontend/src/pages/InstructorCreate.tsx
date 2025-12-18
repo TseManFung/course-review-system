@@ -56,7 +56,6 @@ const InstructorCreate: React.FC = () => {
         if (!active) return;
         setDepartments(res.data?.rows || []);
       } catch (e: any) {
-        // 可能為權限不足
       }
     };
     loadDeps();

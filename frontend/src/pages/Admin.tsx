@@ -20,7 +20,7 @@ import { UserDetailDialog } from './adminTable/dialog/UserDetailDialog';
 
 type PagedResp<T> = { total: number; rows: T[] };
 
-const PAGE_SIZES = [30, 50, 80, 100] as const;
+const PAGE_SIZES = [10, 30, 50, 80, 100] as const;
 
 const DRAWER_WIDTH = 260;
 
