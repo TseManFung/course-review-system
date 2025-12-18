@@ -109,8 +109,6 @@ const Home: React.FC = () => {
       </Stack>
     );
   }
-
-  // Not logged-in: show login/register
   return (
     <Stack spacing={3}>
       <Typography variant="h5">Welcome to Course Review System</Typography>

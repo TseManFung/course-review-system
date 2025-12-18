@@ -130,7 +130,6 @@ const CourseDetail: React.FC = () => {
         setStats((prev) => ({ ...(prev || { contentRating: null, teachingRating: null, gradingRating: null, workloadRating: null, count: 0 }), ...(res.data?.average || {}) }));
       } catch (e) {
         if (!active) return;
-        // keep previous
       }
     };
     loadReviews();

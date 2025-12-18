@@ -181,7 +181,6 @@ const ReviewCreate: React.FC = () => {
   useEffect(() => {
     const q = searchQuery.trim();
     if (!q) {
-      setSearchResults([]);
       return;
     }
     const handle = setTimeout(() => {
@@ -230,7 +229,6 @@ const ReviewCreate: React.FC = () => {
     navigate(`/course/${courseId}`);
   };
 
-  // If not logged in, show a hint
   if (!user) {
     return (
       <Box p={3}>
@@ -246,7 +244,6 @@ const ReviewCreate: React.FC = () => {
       <Card variant="outlined">
         <CardContent>
           <Stack component="form" spacing={3} onSubmit={handleSubmit(onSubmit)}>
-            {/* Course and semester */}
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
               <TextField label="Course ID" value={courseId} fullWidth disabled />
 
@@ -295,8 +292,6 @@ const ReviewCreate: React.FC = () => {
                 />
               )}
             </Stack>
-
-            {/* Instructor search & selection: autocomplete (multiple) */}
             <Controller
               name="instructorIds"
               control={control}
@@ -317,13 +312,20 @@ const ReviewCreate: React.FC = () => {
                     loading={loadingInstructors}
                     inputValue={searchQuery}
                     onInputChange={(_, val, reason) => {
-                      // MUI will fire onInputChange also when option selected (reason === 'reset') - keep last typed query or clear
-                      if (reason === 'input') setSearchQuery(val);
-                      if (reason === 'clear') setSearchQuery('');
+                      if (reason === 'input') {
+                        setSearchQuery(val);
+                      } else if (reason === 'clear') {
+                        setSearchQuery('');
+                      }
                     }}
                     getOptionLabel={(o) => `${o.lastName} ${o.firstName}` + (o.email ? ` · ${o.email}` : '')}
                     value={selectedObjects}
-                    onChange={(_, vals) => field.onChange(vals.map(v => String(v.instructorId)))}
+                    onChange={(_, vals, reason) => {
+                      field.onChange(vals.map(v => String(v.instructorId)));
+                      if (reason === 'selectOption') {
+                        setSearchQuery('');
+                      }
+                    }}
                     filterOptions={(x) => x}
                     isOptionEqualToValue={(opt, val) => String(opt.instructorId) === String(val.instructorId)}
                     renderInput={(params) => (
@@ -352,7 +354,6 @@ const ReviewCreate: React.FC = () => {
               <Button size="small" sx={{ mt: 1 }} onClick={() => navigate('/instructor/create', { state: { from: location.pathname } })}>Create new instructor</Button>
             </Box>
 
-            {/* Four ratings (1-10) */}
             <Box>
               <Typography variant="subtitle1" gutterBottom>
                 Ratings (1-10)
@@ -423,7 +424,6 @@ const ReviewCreate: React.FC = () => {
               )}
             </Box>
 
-            {/* Comment */}
             <Controller
               name="comment"
               control={control}
@@ -436,7 +436,7 @@ const ReviewCreate: React.FC = () => {
                   if (res.score < MIN_SUBMIT_SCORE) {
                     return res.message || 'Comment needs more detail';
                   }
-                  return true; // Acceptable (even if not full pass >=80)
+                  return true;
                 }
               }}
               render={({ field }) => (
@@ -482,7 +482,6 @@ const ReviewCreate: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Duplicate review dialog */}
       <Dialog open={dupDialogOpen} onClose={() => setDupDialogOpen(false)}>
         <DialogTitle>Review already submitted</DialogTitle>
         <DialogContent>

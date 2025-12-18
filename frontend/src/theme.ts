@@ -1,7 +1,5 @@
 import { createTheme } from '@mui/material/styles';
 import type { PaletteMode } from '@mui/material';
-
-// 單純使用 createTheme，不用 extendTheme / colorSchemes。改由外層以 state 切換兩個 theme。
 export const buildTheme = (mode: PaletteMode) =>
   createTheme({
     palette: {
@@ -69,6 +67,5 @@ export const buildTheme = (mode: PaletteMode) =>
     }
   });
 
-// 預設匯出 light 版本，方便目前引用不改太多
 const defaultTheme = buildTheme('light');
 export default defaultTheme;

@@ -7,7 +7,6 @@ const { PASSWORD_REGEX, EMAIL_REGEX } = require('./utils');
 
 const router = express.Router();
 
-// POST /auth/login
 router.post('/login', async (req, res) => {
   try {
     let { userId, password } = req.body || {};
@@ -41,7 +40,6 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Reset loginFail on success
     await pool.query('UPDATE `User` SET loginFail = 0 WHERE userId = ?', [userId]);
 
     const token = jwt.sign(
@@ -63,7 +61,6 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// POST /auth/register
 router.post('/register', async (req, res) => {
   try {
     const { email, password, firstName, lastName } = req.body || {};
@@ -99,8 +96,6 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// GET /auth/verify
-// http://localhost:54320/api/auth/verify?userId=test
 router.get('/verify', async (req, res) => {
   try {
     const { userId } = req.query;
@@ -113,7 +108,6 @@ router.get('/verify', async (req, res) => {
   }
 });
 
-// GET /auth/status
 router.get('/status', authenticateToken, (req, res) => {
   res.json({ authenticated: true, user: req.user });
 });

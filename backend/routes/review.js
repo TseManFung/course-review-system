@@ -28,7 +28,6 @@ router.get('/', authenticateToken, requireAdmin, async (req, res) => {
   } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to fetch reviews' }); }
 });
 
-// GET /review/check?courseId=&semesterId=  - check if current user already reviewed this offering
 router.get('/check', authenticateToken, async (req, res) => {
   try {
     const { userId } = req.user;
@@ -42,7 +41,6 @@ router.get('/check', authenticateToken, async (req, res) => {
   } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to check review' }); }
 });
 
-// GET /review/my - list reviews of current user (non-admin), paginated
 router.get('/my', authenticateToken, async (req, res) => {
   try {
     const { userId } = req.user;
@@ -62,7 +60,6 @@ router.get('/my', authenticateToken, async (req, res) => {
   } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to fetch my reviews' }); }
 });
 
-// POST /review - create a review (auto create CourseOffering if needed)
 router.post('/', authenticateToken, async (req, res) => {
   try {
     const { userId } = req.user;
@@ -74,10 +71,8 @@ router.post('/', authenticateToken, async (req, res) => {
     }
     let instructors = Array.isArray(instructorIds) ? instructorIds.filter(id => id !== null && id !== undefined && id !== '') : [];
 
-    // normalize to unique numeric or string ids
     instructors = [...new Set(instructors.map(v => String(v).trim()).filter(v => v !== ''))];
 
-    // 預先驗證講師是否存在，減少外鍵錯誤 (1452)
     let existingInstructorIds = [];
     let invalidInstructorIds = [];
     if (instructors.length > 0) {
@@ -98,13 +93,11 @@ router.post('/', authenticateToken, async (req, res) => {
     const conn = await pool.getConnection();
     try {
       await conn.beginTransaction();
-      // ensure offering exists
       await conn.query(
         'INSERT INTO CourseOffering (courseId, semesterId) VALUES (?, ?) ON DUPLICATE KEY UPDATE semesterId = VALUES(semesterId)',
         [courseId, semesterId]
       );
 
-      // ensure not already reviewed
       const [[dup]] = await conn.query(
         'SELECT reviewId FROM Review WHERE userId = ? AND courseId = ? AND semesterId = ? LIMIT 1',
         [userId, courseId, semesterId]
@@ -124,8 +117,6 @@ router.post('/', authenticateToken, async (req, res) => {
         'INSERT INTO ReviewComment (reviewId, comment) VALUES (?, ?)',
         [reviewId, (typeof comment === 'string' && comment.trim() !== '') ? comment.trim() : null]
       );
-
-      // Link only existing instructors to avoid foreign key violation
       if (existingInstructorIds.length > 0) {
         for (const ins of existingInstructorIds) {
           try {

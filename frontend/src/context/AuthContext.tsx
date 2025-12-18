@@ -41,7 +41,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const res = await api.get('/user/profile');
       if (res?.data) setUser(res.data);
     } catch {
-      // ignore; profile may require more fields
     }
   };
 

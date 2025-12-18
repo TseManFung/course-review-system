@@ -21,7 +21,6 @@ router.get('/', authenticateToken, requireAdmin, async (req, res) => {
   } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to fetch instructors' }); }
 });
 
-// POST /instructor - create instructor
 router.post('/', authenticateToken, async (req, res) => {
   try {
     const { firstName, lastName, email, departmentId } = req.body || {};
@@ -40,7 +39,6 @@ router.post('/', authenticateToken, async (req, res) => {
   } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to create instructor' }); }
 });
 
-// GET /instructor/search?query=...
 router.get('/search', authenticateToken, async (req, res) => {
   try {
     const q = (req.query.query || '').trim();
@@ -58,7 +56,6 @@ router.get('/search', authenticateToken, async (req, res) => {
   } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to search instructor' }); }
 });
 
-// GET /instructor/check?email=
 router.get('/check', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { email } = req.query;

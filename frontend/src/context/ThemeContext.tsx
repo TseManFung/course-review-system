@@ -5,9 +5,7 @@ import type { PaletteMode } from '@mui/material';
 import { buildTheme } from '../theme';
 
 interface ThemeCtx {
-  // current selected mode: 'light' | 'dark' | 'system'
   mode: string;
-  // resolved concrete mode (if system -> light/dark based on media query)
   resolvedMode: PaletteMode;
   toggle: () => void;
   setMode: (m: PaletteMode | 'system') => void;
@@ -21,7 +19,7 @@ export const useThemeMode = () => {
   return ctx;
 };
 
-const STORAGE_KEY = 'theme-mode'; // 'light' | 'dark' | 'system'
+const STORAGE_KEY = 'theme-mode';
 
 export const ThemeModeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const prefersDark = typeof window !== 'undefined' ? window.matchMedia('(prefers-color-scheme: dark)') : null;
@@ -36,17 +34,14 @@ export const ThemeModeProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     ? (prefersDark?.matches ? 'dark' : 'light')
     : (mode as PaletteMode)) || 'light';
 
-  // persist
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, mode);
   }, [mode]);
 
-  // listen system change when in system mode
   useEffect(() => {
     if (!prefersDark) return;
     const listener = () => {
       if (mode === 'system') {
-        // force re-evaluate by updating state (same value OK)
         setMode(prev => prev);
       }
     };

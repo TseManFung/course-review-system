@@ -1,11 +1,8 @@
-// Utility for analyzing comment quality (zh/en mixed)
 export type CommentQualityResult = {
   ok: boolean;
-  score: number; // 0-100 heuristic score
-  message?: string; // error or improvement suggestion
+  score: number;
+  message?: string;
 };
-
-// Return true|string compatibility wrapper
 export function analyzeCommentQuality(raw: string): true | string {
   const r = analyze(raw);
   return r.ok ? true : r.message || "Invalid";
@@ -27,11 +24,7 @@ export function analyze(raw: string): CommentQualityResult {
   if (!raw) return { ok: false, score: 0, message: "Comment is required" };
   const text = raw.trim();
   if (!text) return { ok: false, score: 0, message: "Comment is required" };
-
-  // Base score starts at length proportion
-  let score = Math.min(60, Math.floor(text.length / 10)); // up to 60 from length alone (>=600 chars saturates)
-
-  // Tokenization (mixed zh/en):
+  let score = Math.min(60, Math.floor(text.length / 10));
   const cleaned = text.replace(/[\p{P}\p{S}]/gu, " ");
   const tokenRegex = /[A-Za-z]+|\d+|[\u4e00-\u9fff]/g;
   const words: string[] = [];
@@ -43,13 +36,9 @@ export function analyze(raw: string): CommentQualityResult {
   const x = words.length;
   const diversity = words.length ? uniqueWords.size / words.length : 0;
 
-  
-  // Positive contributions
   score += calculateScore(x);
   if (diversity > 0.5) score += 10;
   else if (diversity > 0.3) score += 4;
-
-  // Negative heuristics (deductions)
   const deductions: string[] = [];
   const pushDeduct = (msg: string, amt: number) => {
     score -= amt;
@@ -94,7 +83,6 @@ export function analyze(raw: string): CommentQualityResult {
   if (gibberishTokens.some((tok) => lower.includes(tok)))
     pushDeduct("Content appears to be placeholder/gibberish", 40);
 
-  // Repetition of same word
   const freq: Record<string, number> = {};
   for (const w of words)
     freq[w.toLowerCase()] = (freq[w.toLowerCase()] || 0) + 1;
@@ -105,15 +93,11 @@ export function analyze(raw: string): CommentQualityResult {
       pushDeduct("Too many repetitions of the same word", 100);
   }
 
-  //score *= 2;
-  // Clamp score
   score = Math.round(Math.max(0, Math.min(100, score)));
   if (deductions.length) {
-    // Provide the first deduction as primary message
     return { ok: false, score, message: deductions[0] };
   }
-  // Passing threshold
-  const pass = score >= 80; // heuristic threshold
+  const pass = score >= 80;
   console.log(score)
   return pass
     ? { ok: true, score }

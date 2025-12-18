@@ -21,7 +21,6 @@ export interface RatingProps {
 }
 
 const RatingComponent: React.FC<RatingProps> = ({ label, value, numFix = 2 }) => {
-  // 後端平均可能是 number 或 string，或為 0 / null
   let num: number | undefined;
   if (value === 0 || value === '0') {
     num = 0;

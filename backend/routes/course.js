@@ -28,8 +28,6 @@ router.get('/', authenticateToken, async (req, res) => {
   } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to fetch courses' }); }
 });
 
-// IMPORTANT: place fixed sub-routes like /search and /check BEFORE any dynamic :courseId route
-// GET /course/search?query=&page=&limit=&sort=
 router.get('/search', authenticateToken, async (req, res) => {
   try {
     const { offset, limit } = buildPagination(req);
@@ -86,7 +84,6 @@ router.get('/search', authenticateToken, async (req, res) => {
   } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to search courses' }); }
 });
 
-// GET /course/check?courseId= - check existence
 router.get('/check', authenticateToken, async (req, res) => {
   try {
     const { courseId } = req.query;
@@ -96,7 +93,6 @@ router.get('/check', authenticateToken, async (req, res) => {
   } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to check course' }); }
 });
 
-// GET /course/:courseId - course details: base info, offerings, and review stats
 router.get('/:courseId', authenticateToken, async (req, res) => {
   try {
     const { courseId } = req.params;
@@ -137,7 +133,6 @@ router.get('/:courseId', authenticateToken, async (req, res) => {
   } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to fetch course details' }); }
 });
 
-// GET /course/:courseId/offerings - list offerings for a course
 router.get('/:courseId/offerings', authenticateToken, async (req, res) => {
   try {
     const { courseId } = req.params;
@@ -156,7 +151,6 @@ router.get('/:courseId/offerings', authenticateToken, async (req, res) => {
   } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to fetch offerings' }); }
 });
 
-// POST /course/:courseId/instructor - add instructor to a course offering (auto create offering)
 router.post('/:courseId/instructor', authenticateToken, async (req, res) => {
   try {
     const { courseId } = req.params;
