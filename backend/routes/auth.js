@@ -102,6 +102,8 @@ router.get('/verify', async (req, res) => {
     if (!userId) return res.status(400).json({ error: 'userId is required' });
     await pool.query('UPDATE `User` SET accessLevel = 10000, updatedAt = NOW() WHERE userId = ?', [userId]);
     res.json({ message: 'Account verified' });
+    res.redirect('http://atlweb.freedynamicdns.net/');
+    
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Verification failed' });

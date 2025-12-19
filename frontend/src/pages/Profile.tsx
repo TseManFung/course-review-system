@@ -65,8 +65,8 @@ const Profile: React.FC = () => {
     const newPassword = String(fd.get('newPassword') || '');
     const confirmPassword = String(fd.get('confirmPassword') || '');
     const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,}$/;
-    if (!regex.test(newPassword)) return alert('新密碼格式不符：至少 8 碼，含大小寫與特殊字元');
-    if (newPassword !== confirmPassword) return alert('新密碼與確認不一致');
+    if (!regex.test(newPassword)) return alert('The new password format is incorrect: at least 8 characters, including uppercase and lowercase letters and special characters.');
+    if (newPassword !== confirmPassword) return alert('The new password and confirmation do not match.');
     await api.patch('/user/password', { oldPassword, newPassword, confirmPassword });
     setPwdOpen(false);
   };
