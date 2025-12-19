@@ -8,8 +8,8 @@ services:
       MYSQL_DATABASE: CRS_DB  # default database name
       MYSQL_USER: user  # your user
       MYSQL_PASSWORD: password # your user password
-    ports:
-      - "3306:3306"  # for local access if needed
+    #ports:
+    #  - "3306:3306"  # for local access if needed
     volumes:
       - mysql_data:/var/lib/mysql
       - ./course_review.sql:/docker-entrypoint-initdb.d/init.sql  # auto-import SQL to initialize User, Course, etc. tables
@@ -17,22 +17,23 @@ services:
   backend:
     build: ./backend
     ports:
-      - "54320:54320"  # exposed to PC 192.168.0.105:54320
+      - "54320:54320"  # exposed to PC :54320
     environment:
       - DB_HOST=db  # connect to Docker internal db
-      - DB_USER=root
-      - DB_PASSWORD=example
+      - DB_USER=user # your user
+      - DB_PASSWORD=password # your user password
       - DB_NAME=CRS_DB
       - PORT=54320
+      - JWT_SECRET=your_jwt_secret  # replace with your JWT secret
     depends_on:
       - db
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      # target: production   # To use nginx, uncomment the line.
     ports:
-      - "54321:54321"  # exposed to PC 192.168.0.105:54321
-    environment:
-      - VITE_API_URL=http://backend:54320  # connect to backend (Docker internal network)
+      - "54321:54321"  # exposed to PC :54321
     depends_on:
       - backend
 
