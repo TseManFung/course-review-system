@@ -6,8 +6,8 @@
 - **前端**：Vite + React（TypeScript），MUI（Material-UI）
 - **密碼加密**：bcrypt（12 輪哈希）
 - **網路配置**：
-  - PC (192.168.0.105:54321) -> AP (192.168.0.1:80) / 113.252.199.67 -> modem -> http://atlweb.freedynamicdns.net/
-  - PC (192.168.0.105:54320) -> AP (192.168.0.1:12345) / 113.252.199.67 -> modem -> http://atlweb.freedynamicdns.net/
+  - PC (192.168.0.x:54321) -> AP / router (192.168.0.1:80) -> modem -> public IP -> domain
+  - PC (192.168.0.x:54320) -> AP / router (192.168.0.1:80) -> modem -> public IP -> domain
 
 ## 2. 功能需求
 
@@ -335,7 +335,7 @@
   - 使用 bcrypt 加密密碼，限制 `loginFail`（> 5 次鎖定帳戶）。
   - 密碼需符合正則表達式：`^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,}$`。
 - **性能**：
-  - 分頁請求限制每頁數據量（30、50、80、100 行）。
+  - 分頁請求限制每頁數據量（10、30、50、80、100 行）。
   - 使用資料庫索引優化搜索（`courseId`, `name`, `Instructor.email` 等）。
   - 評分計算使用 SQL 聚合函數（`AVG`）。
 - **可訪問性**：

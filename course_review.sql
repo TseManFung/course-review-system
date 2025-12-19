@@ -115,6 +115,7 @@ ALTER TABLE `Review` ADD FOREIGN KEY (`courseId`, `semesterId`) REFERENCES `Cour
 
 ALTER TABLE `ReviewComment` ADD FOREIGN KEY (`reviewId`) REFERENCES `Review` (`reviewId`);
 
+/* All CRS user use the same password “abc”. */
 INSERT INTO `User` (`userId`, `email`, `password`, `accessLevel`, `firstName`, `lastName`, `loginFail`, `createdAt`, `updatedAt`)
 VALUES
   ('alice.chan', 'alice.chan@connect.polyu.hk', '$2a$12$/7doXvzEmW5T8Hxrz5gAjuczBBpol58us2CS09MVN9p5SZ90TAjGm', 10000, 'Alice', 'Chan', 0, '2023-09-01 10:00:00', '2023-09-01 10:00:00'),
